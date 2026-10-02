@@ -2426,7 +2426,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   height: clamp(420px, 50vw, 750px) !important;
   background: radial-gradient(circle, rgba(147, 197, 253, 0.68) 0%, rgba(191, 219, 254, 0.38) 45%, rgba(255, 255, 255, 0) 75%) !important;
   filter: blur(52px) !important;
-  opacity: 0.82 !important;
+  opacity: 0.60 !important;
   animation: floatBlob1 24s ease-in-out infinite !important;
 }
 
@@ -2438,7 +2438,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   height: clamp(480px, 55vw, 820px) !important;
   background: radial-gradient(circle, rgba(59, 130, 246, 0.48) 0%, rgba(96, 165, 250, 0.30) 48%, rgba(255, 255, 255, 0) 75%) !important;
   filter: blur(58px) !important;
-  opacity: 0.85 !important;
+  opacity: 0.58 !important;
   animation: floatBlob2 26s ease-in-out infinite !important;
 }
 
@@ -2450,35 +2450,99 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   height: clamp(380px, 45vw, 680px) !important;
   background: radial-gradient(circle, rgba(186, 230, 253, 0.58) 0%, rgba(219, 234, 254, 0.32) 45%, rgba(255, 255, 255, 0) 72%) !important;
   filter: blur(48px) !important;
-  opacity: 0.78 !important;
+  opacity: 0.48 !important;
   animation: floatBlob3 22s ease-in-out infinite !important;
 }
 
-/* New Blue Ribbon Layer: Broad translucent flowing wave of light crossing behind Demo UI */
+/* Broad organic Blue Wave Layer crossing behind the FV content */
 .hero-blue-ribbon {
   position: absolute !important;
-  top: 18% !important;
-  left: -20% !important;
-  width: clamp(800px, 145vw, 1900px) !important;
-  height: clamp(160px, 18vw, 240px) !important;
-  border-radius: 9999px !important;
+  top: 10% !important;
+  left: -24% !important;
+  width: clamp(1200px, 165vw, 2200px) !important;
+  height: clamp(300px, 31vw, 410px) !important;
+  border-radius: 62% 38% 56% 44% / 70% 35% 65% 30% !important;
   background: linear-gradient(
-    105deg,
+    112deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(186, 230, 253, 0.16) 12%,
-    rgba(147, 197, 253, 0.42) 28%,
-    rgba(59, 130, 246, 0.36) 48%,
-    rgba(96, 165, 250, 0.32) 68%,
-    rgba(219, 234, 254, 0.18) 85%,
+    rgba(219, 234, 254, 0.32) 8%,
+    rgba(186, 230, 253, 0.42) 22%,
+    rgba(147, 197, 253, 0.40) 38%,
+    rgba(96, 165, 250, 0.34) 53%,
+    rgba(59, 130, 246, 0.25) 67%,
+    rgba(147, 197, 253, 0.34) 82%,
+    rgba(219, 234, 254, 0.24) 93%,
     rgba(255, 255, 255, 0) 100%
+  ), radial-gradient(
+    ellipse at 46% 43%,
+    rgba(147, 197, 253, 0.18) 0%,
+    rgba(186, 230, 253, 0.12) 38%,
+    rgba(219, 234, 254, 0) 72%
   ) !important;
-  filter: blur(48px) !important;
-  opacity: 0.72 !important;
+  opacity: 0.78 !important;
   pointer-events: none !important;
   z-index: 2 !important;
   will-change: transform, opacity !important;
-  transform: translate3d(0, 0, 0) rotate(-14deg) scale(1) !important;
-  animation: floatRibbon 24s ease-in-out infinite !important;
+  animation: floatRibbon 25s ease-in-out infinite !important;
+}
+
+.hero-blue-ribbon::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 3% -1% -1% 1% !important;
+  border-radius: 38% 62% 44% 56% / 54% 42% 58% 46% !important;
+  background: linear-gradient(
+    108deg,
+    rgba(219, 234, 254, 0.12) 0%,
+    rgba(186, 230, 253, 0.32) 24%,
+    rgba(147, 197, 253, 0.28) 48%,
+    rgba(96, 165, 250, 0.20) 68%,
+    rgba(219, 234, 254, 0.08) 100%
+  ) !important;
+  filter: blur(12px) !important;
+  opacity: 0.72 !important;
+  will-change: transform !important;
+  animation: floatRibbonLayer 28s ease-in-out infinite !important;
+  pointer-events: none !important;
+}
+
+.hero-blue-ribbon::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -2% !important;
+  width: 104% !important;
+  height: 100% !important;
+  -webkit-mask-image: radial-gradient(
+    ellipse 78% 88% at 50% 103%,
+    transparent 79.6%,
+    #000 79.9%,
+    #000 80.3%,
+    transparent 80.6%
+  ) !important;
+  mask-image: radial-gradient(
+    ellipse 78% 88% at 50% 103%,
+    transparent 79.6%,
+    #000 79.9%,
+    #000 80.3%,
+    transparent 80.6%
+  ) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(219, 234, 254, 0.38) 24%,
+    rgba(255, 255, 255, 0.78) 48%,
+    rgba(219, 234, 254, 0.54) 62%,
+    rgba(255, 255, 255, 0.16) 82%,
+    rgba(255, 255, 255, 0.06) 100%
+  ) !important;
+  background-size: 180% 100% !important;
+  background-position: 0% 0 !important;
+  filter: drop-shadow(0 0 2px rgba(219, 234, 254, 0.40)) drop-shadow(0 8px 2px rgba(219, 234, 254, 0.30)) !important;
+  opacity: 0.76 !important;
+  will-change: transform, background-position !important;
+  animation: floatRibbonLight 19s ease-in-out infinite !important;
+  pointer-events: none !important;
 }
 
 /* PC / Tablet Keyframes: Gentle organic drift with larger travel distance */
@@ -2529,13 +2593,39 @@ You might need to use a local HTTP server (instead of file://): https://react.de
 
 @keyframes floatRibbon {
   0% {
-    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(-4deg) scale(1);
+  }
+  25% {
+    transform: translate3d(82px, 14px, 0) rotate(-2deg) scale(1.015);
   }
   50% {
-    transform: translate3d(130px, 32px, 0) rotate(-11deg) scale(1.038);
+    transform: translate3d(150px, 38px, 0) rotate(-1deg) scale(1.03);
+  }
+  75% {
+    transform: translate3d(70px, 18px, 0) rotate(-2.5deg) scale(1.015);
   }
   100% {
-    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(-4deg) scale(1);
+  }
+}
+
+@keyframes floatRibbonLayer {
+  0%, 100% {
+    transform: translate3d(0, 10px, 0) rotate(2deg) scale(0.98);
+  }
+  50% {
+    transform: translate3d(-35px, -8px, 0) rotate(-1deg) scale(1.01);
+  }
+}
+
+@keyframes floatRibbonLight {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    background-position: 0% 0;
+  }
+  50% {
+    transform: translate3d(190px, 36px, 0) rotate(2deg) scale(1.02);
+    background-position: 100% 0;
   }
 }
 
@@ -2563,13 +2653,38 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     animation: floatBlob3Mobile 22s ease-in-out infinite !important;
   }
   .hero-blue-ribbon {
-    top: 24% !important;
-    left: -25% !important;
-    width: 140vw !important;
-    height: 110px !important;
-    filter: blur(36px) !important;
-    opacity: 0.42 !important;
-    animation: floatRibbonMobile 24s ease-in-out infinite !important;
+    top: 7% !important;
+    left: -43% !important;
+    width: 190vw !important;
+    height: 200px !important;
+    opacity: 0.62 !important;
+    border-radius: 68% 32% 60% 40% / 64% 40% 60% 36% !important;
+    animation: floatRibbonMobile 25s ease-in-out infinite !important;
+  }
+  .hero-blue-ribbon::before {
+    inset: 5% -2% 0 2% !important;
+    border-radius: 42% 58% 38% 62% / 55% 45% 55% 45% !important;
+    filter: blur(10px) !important;
+    opacity: 0.62 !important;
+    animation: floatRibbonLayerMobile 30s ease-in-out infinite !important;
+  }
+  .hero-blue-ribbon::after {
+    -webkit-mask-image: radial-gradient(
+      ellipse 82% 88% at 50% 105%,
+      transparent 79.6%,
+      #000 79.9%,
+      #000 80.3%,
+      transparent 80.6%
+    ) !important;
+    mask-image: radial-gradient(
+      ellipse 82% 88% at 50% 105%,
+      transparent 79.6%,
+      #000 79.9%,
+      #000 80.3%,
+      transparent 80.6%
+    ) !important;
+    filter: drop-shadow(0 7px 2px rgba(219, 234, 254, 0.30)) !important;
+    animation: floatRibbonLightMobile 21s ease-in-out infinite !important;
   }
 }
 
@@ -2620,20 +2735,48 @@ You might need to use a local HTTP server (instead of file://): https://react.de
 
 @keyframes floatRibbonMobile {
   0% {
-    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(-3deg) scale(1);
+  }
+  25% {
+    transform: translate3d(42px, 8px, 0) rotate(-2deg) scale(1.01);
   }
   50% {
-    transform: translate3d(70px, 16px, 0) rotate(-12deg) scale(1.02);
+    transform: translate3d(82px, 20px, 0) rotate(-1.5deg) scale(1.02);
+  }
+  75% {
+    transform: translate3d(38px, 9px, 0) rotate(-2deg) scale(1.01);
   }
   100% {
-    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(-3deg) scale(1);
+  }
+}
+
+@keyframes floatRibbonLayerMobile {
+  0%, 100% {
+    transform: translate3d(0, 7px, 0) rotate(1deg) scale(0.98);
+  }
+  50% {
+    transform: translate3d(-20px, -5px, 0) rotate(-1deg) scale(1);
+  }
+}
+
+@keyframes floatRibbonLightMobile {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    background-position: 0% 0;
+  }
+  50% {
+    transform: translate3d(100px, 18px, 0) rotate(1.5deg) scale(1.01);
+    background-position: 100% 0;
   }
 }
 
 /* Accessibility: Stop animation cleanly if prefers-reduced-motion is active while preserving soft background */
 @media (prefers-reduced-motion: reduce) {
   .hero-gradient-blob,
-  .hero-blue-ribbon {
+  .hero-blue-ribbon,
+  .hero-blue-ribbon::before,
+  .hero-blue-ribbon::after {
     animation: none !important;
   }
 }
