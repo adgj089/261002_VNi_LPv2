@@ -1787,7 +1787,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     ]
   }, void 0, !0);
 
-  return s.jsxDEV("div", { className: "hero-fv-wrapper relative w-full overflow-hidden bg-white", children: [ s.jsxDEV("div", { className: "hero-abstract-bg pointer-events-none absolute inset-0 z-0 overflow-hidden", "aria-hidden": "true", children: [ s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-1" }, void 0, !1), s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-2" }, void 0, !1), s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-3" }, void 0, !1) ] }, void 0, !0), s.jsxDEV("main", { className: "hero-main relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14 lg:pb-18 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center h-auto",
+  return s.jsxDEV("div", { className: "hero-fv-wrapper relative w-full overflow-hidden bg-white", children: [ s.jsxDEV("div", { className: "hero-abstract-bg pointer-events-none absolute inset-0 z-0 overflow-hidden", "aria-hidden": "true", children: [ s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-1" }, void 0, !1), s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-2" }, void 0, !1), s.jsxDEV("div", { className: "hero-gradient-blob hero-blob-3" }, void 0, !1), s.jsxDEV("div", { className: "hero-blue-ribbon" }, void 0, !1) ] }, void 0, !0), s.jsxDEV("main", { className: "hero-main relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14 lg:pb-18 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center h-auto",
     children: [
       // Left Hero Column (Preserved verbatim)
       s.jsxDEV("div", {
@@ -2414,55 +2414,83 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   position: absolute !important;
   border-radius: 9999px !important;
   pointer-events: none !important;
+  z-index: 1 !important;
   will-change: transform, opacity !important;
 }
 
-/* Blob 1: Top-Left soft cyan/sky glow behind headline */
+/* Blob 1: Top-Left soft cyan/sky glow behind headline (PC / Tablet) */
 .hero-blob-1 {
   top: -10% !important;
   left: -2% !important;
   width: clamp(420px, 50vw, 750px) !important;
   height: clamp(420px, 50vw, 750px) !important;
-  background: radial-gradient(circle, rgba(147, 197, 253, 0.65) 0%, rgba(191, 219, 254, 0.35) 45%, rgba(255, 255, 255, 0) 75%) !important;
-  filter: blur(70px) !important;
-  opacity: 0.75 !important;
-  animation: floatBlob1 20s ease-in-out infinite !important;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.68) 0%, rgba(191, 219, 254, 0.38) 45%, rgba(255, 255, 255, 0) 75%) !important;
+  filter: blur(52px) !important;
+  opacity: 0.82 !important;
+  animation: floatBlob1 24s ease-in-out infinite !important;
 }
 
-/* Blob 2: Right side brand blue glow wrapping behind Demo UI */
+/* Blob 2: Right side brand blue glow wrapping behind Demo UI (PC / Tablet) */
 .hero-blob-2 {
   top: 5% !important;
   right: -5% !important;
   width: clamp(480px, 55vw, 820px) !important;
   height: clamp(480px, 55vw, 820px) !important;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, rgba(96, 165, 250, 0.28) 48%, rgba(255, 255, 255, 0) 75%) !important;
-  filter: blur(80px) !important;
-  opacity: 0.70 !important;
-  animation: floatBlob2 25s ease-in-out infinite !important;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.48) 0%, rgba(96, 165, 250, 0.30) 48%, rgba(255, 255, 255, 0) 75%) !important;
+  filter: blur(58px) !important;
+  opacity: 0.85 !important;
+  animation: floatBlob2 26s ease-in-out infinite !important;
 }
 
-/* Blob 3: Center-Bottom gentle azure glow between CTA and Stats transition */
+/* Blob 3: Center-Bottom gentle azure glow between CTA and Stats transition (PC / Tablet) */
 .hero-blob-3 {
   bottom: -8% !important;
   left: 20% !important;
   width: clamp(380px, 45vw, 680px) !important;
   height: clamp(380px, 45vw, 680px) !important;
-  background: radial-gradient(circle, rgba(186, 230, 253, 0.55) 0%, rgba(219, 234, 254, 0.30) 45%, rgba(255, 255, 255, 0) 72%) !important;
-  filter: blur(65px) !important;
-  opacity: 0.65 !important;
-  animation: floatBlob3 18s ease-in-out infinite !important;
+  background: radial-gradient(circle, rgba(186, 230, 253, 0.58) 0%, rgba(219, 234, 254, 0.32) 45%, rgba(255, 255, 255, 0) 72%) !important;
+  filter: blur(48px) !important;
+  opacity: 0.78 !important;
+  animation: floatBlob3 22s ease-in-out infinite !important;
 }
 
-/* PC / Tablet Keyframes: Gentle organic drift */
+/* New Blue Ribbon Layer: Broad translucent flowing wave of light crossing behind Demo UI */
+.hero-blue-ribbon {
+  position: absolute !important;
+  top: 18% !important;
+  left: -20% !important;
+  width: clamp(800px, 145vw, 1900px) !important;
+  height: clamp(160px, 18vw, 240px) !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(186, 230, 253, 0.16) 12%,
+    rgba(147, 197, 253, 0.42) 28%,
+    rgba(59, 130, 246, 0.36) 48%,
+    rgba(96, 165, 250, 0.32) 68%,
+    rgba(219, 234, 254, 0.18) 85%,
+    rgba(255, 255, 255, 0) 100%
+  ) !important;
+  filter: blur(48px) !important;
+  opacity: 0.72 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+  will-change: transform, opacity !important;
+  transform: translate3d(0, 0, 0) rotate(-14deg) scale(1) !important;
+  animation: floatRibbon 24s ease-in-out infinite !important;
+}
+
+/* PC / Tablet Keyframes: Gentle organic drift with larger travel distance */
 @keyframes floatBlob1 {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate3d(45px, 22px, 0) scale(1.025);
+    transform: translate3d(95px, 28px, 0) scale(1.035);
   }
   66% {
-    transform: translate3d(-28px, 34px, 0) scale(1.01);
+    transform: translate3d(-85px, 42px, 0) scale(1.02);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -2474,10 +2502,10 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     transform: translate3d(0, 0, 0) scale(1);
   }
   38% {
-    transform: translate3d(-52px, -24px, 0) scale(1.03);
+    transform: translate3d(-115px, -32px, 0) scale(1.04);
   }
   72% {
-    transform: translate3d(32px, -14px, 0) scale(1.015);
+    transform: translate3d(85px, -18px, 0) scale(1.018);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -2489,38 +2517,59 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     transform: translate3d(0, 0, 0) scale(1);
   }
   45% {
-    transform: translate3d(36px, -22px, 0) scale(1.022);
+    transform: translate3d(90px, -30px, 0) scale(1.03);
   }
   80% {
-    transform: translate3d(-38px, 16px, 0) scale(1.01);
+    transform: translate3d(-85px, 26px, 0) scale(1.015);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-/* Smartphone optimization: 50-70% motion, lower opacity, maximum text legibility */
+@keyframes floatRibbon {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+  }
+  50% {
+    transform: translate3d(130px, 32px, 0) rotate(-11deg) scale(1.038);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+  }
+}
+
+/* Smartphone optimization: 50-70% motion, subtle opacity (0.16-0.22), maximum text legibility */
 @media (max-width: 768px) {
   .hero-blob-1 {
-    width: 280px !important;
-    height: 280px !important;
-    filter: blur(70px) !important;
-    opacity: 0.09 !important;
+    width: 290px !important;
+    height: 290px !important;
+    filter: blur(52px) !important;
+    opacity: 0.20 !important;
     animation: floatBlob1Mobile 24s ease-in-out infinite !important;
   }
   .hero-blob-2 {
-    width: 320px !important;
-    height: 320px !important;
-    filter: blur(80px) !important;
-    opacity: 0.10 !important;
-    animation: floatBlob2Mobile 28s ease-in-out infinite !important;
+    width: 330px !important;
+    height: 330px !important;
+    filter: blur(58px) !important;
+    opacity: 0.22 !important;
+    animation: floatBlob2Mobile 26s ease-in-out infinite !important;
   }
   .hero-blob-3 {
-    width: 240px !important;
-    height: 240px !important;
-    filter: blur(65px) !important;
-    opacity: 0.08 !important;
+    width: 250px !important;
+    height: 250px !important;
+    filter: blur(50px) !important;
+    opacity: 0.18 !important;
     animation: floatBlob3Mobile 22s ease-in-out infinite !important;
+  }
+  .hero-blue-ribbon {
+    top: 24% !important;
+    left: -25% !important;
+    width: 140vw !important;
+    height: 110px !important;
+    filter: blur(36px) !important;
+    opacity: 0.42 !important;
+    animation: floatRibbonMobile 24s ease-in-out infinite !important;
   }
 }
 
@@ -2529,10 +2578,10 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     transform: translate3d(0, 0, 0) scale(1);
   }
   33% {
-    transform: translate3d(22px, 11px, 0) scale(1.015);
+    transform: translate3d(55px, 16px, 0) scale(1.02);
   }
   66% {
-    transform: translate3d(-14px, 17px, 0) scale(1.008);
+    transform: translate3d(-45px, 22px, 0) scale(1.01);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -2544,10 +2593,10 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     transform: translate3d(0, 0, 0) scale(1);
   }
   38% {
-    transform: translate3d(-26px, -12px, 0) scale(1.018);
+    transform: translate3d(-65px, -18px, 0) scale(1.025);
   }
   72% {
-    transform: translate3d(16px, -7px, 0) scale(1.008);
+    transform: translate3d(45px, -10px, 0) scale(1.01);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -2559,21 +2608,33 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     transform: translate3d(0, 0, 0) scale(1);
   }
   45% {
-    transform: translate3d(18px, -11px, 0) scale(1.012);
+    transform: translate3d(50px, -16px, 0) scale(1.018);
   }
   80% {
-    transform: translate3d(-19px, 8px, 0) scale(1.006);
+    transform: translate3d(-45px, 14px, 0) scale(1.008);
   }
   100% {
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
-/* Accessibility: Stop animation if prefers-reduced-motion is active */
+@keyframes floatRibbonMobile {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+  }
+  50% {
+    transform: translate3d(70px, 16px, 0) rotate(-12deg) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-14deg) scale(1);
+  }
+}
+
+/* Accessibility: Stop animation cleanly if prefers-reduced-motion is active while preserving soft background */
 @media (prefers-reduced-motion: reduce) {
-  .hero-gradient-blob {
+  .hero-gradient-blob,
+  .hero-blue-ribbon {
     animation: none !important;
-    transform: none !important;
   }
 }
 
