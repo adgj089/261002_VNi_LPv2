@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run build",
     "dev": "node server.js",
-    "build": "echo 'No build step needed'",
+    "build": "node scripts/build-single-html.mjs",
+    "prestart": "npm run build",
     "start": "node server.js"
   },
   "dependencies": {

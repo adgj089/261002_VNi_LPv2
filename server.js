@@ -1,4 +1,5 @@
 import express from 'express';
+import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,13 +8,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const distDirectory = path.join(__dirname, 'dist');
+const distIndex = path.join(distDirectory, 'index.html');
 
-// Serve static files from root directory
-app.use(express.static(__dirname));
+if (!existsSync(distIndex)) {
+  console.error('Cannot start server: dist/index.html is missing. Run "npm run build" first.');
+  process.exit(1);
+}
 
-// Fallback to index.html for any requested path
+app.use(express.static(distDirectory));
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(distIndex);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
