@@ -1,15 +1,14 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const paths = {
-  html: path.join(projectRoot, 'index.html'),
+  html: path.join(projectRoot, 'src', '261003-index.html'),
   css: path.join(projectRoot, 'src', 'ai-chat.css'),
   javascript: path.join(projectRoot, 'src', 'ai-chat.js'),
   image: path.join(projectRoot, 'public', 'scattered_data_cards.webp'),
-  outputDirectory: path.join(projectRoot, 'dist'),
-  output: path.join(projectRoot, 'dist', 'index.html'),
+  output: path.join(projectRoot, 'index.html'),
 };
 
 try {
@@ -21,10 +20,16 @@ try {
   ]);
 
   if (!html.includes('</head>')) {
-    throw new Error('Root index.html is missing the required </head> closing tag.');
+    throw new Error('src/261003-index.html is missing the required </head> closing tag.');
   }
   if (!html.includes('</body>')) {
-    throw new Error('Root index.html is missing the required </body> closing tag.');
+    throw new Error('src/261003-index.html is missing the required </body> closing tag.');
+  }
+  if (
+    html.includes('id="vn-ai-chat-styles"') ||
+    html.includes('id="vn-ai-chat-script"')
+  ) {
+    throw new Error('src/261003-index.html must not contain injected chat styles or script.');
   }
 
   const styleTag = `<style id="vn-ai-chat-styles">\n${css}\n</style>`;
@@ -32,12 +37,10 @@ try {
   const imageDataUri = `data:image/webp;base64,${image.toString('base64')}`;
   const withStyles = html.replace('</head>', `${styleTag}\n</head>`);
   const withScript = withStyles.replace('</body>', `${scriptTag}\n</body>`);
-  const outputHtml = withScript.replaceAll(
-    './public/scattered_data_cards.webp',
-    imageDataUri,
-  );
+  const outputHtml = withScript
+    .replaceAll('./public/scattered_data_cards.webp', imageDataUri)
+    .replace(/\r\n/g, '\n');
 
-  await mkdir(paths.outputDirectory, { recursive: true });
   await writeFile(paths.output, outputHtml, 'utf8');
   console.log(`Built ${path.relative(projectRoot, paths.output)}`);
 } catch (error) {

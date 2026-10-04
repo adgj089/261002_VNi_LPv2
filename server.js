@@ -8,18 +8,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const distDirectory = path.join(__dirname, 'dist');
-const distIndex = path.join(distDirectory, 'index.html');
+const publicDirectory = path.join(__dirname, 'public');
+const indexFile = path.join(__dirname, 'index.html');
 
-if (!existsSync(distIndex)) {
-  console.error('Cannot start server: dist/index.html is missing. Run "npm run build" first.');
+if (!existsSync(indexFile)) {
+  console.error('Cannot start server: root index.html is missing. Run "npm run build" first.');
   process.exit(1);
 }
 
-app.use(express.static(distDirectory));
+app.use('/public', express.static(publicDirectory));
 
 app.get('*', (req, res) => {
-  res.sendFile(distIndex);
+  res.sendFile(indexFile);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
