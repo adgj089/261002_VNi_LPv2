@@ -346,6 +346,7 @@
   const STORAGE_KEY = 'vnInsightLanguage';
   const SUPPORTED = ['ja', 'en', 'vi', 'zh', 'ko', 'es', 'fr'];
   const LABELS = { ja: '日本語', en: 'English', vi: 'Tiếng Việt', zh: '简体中文', ko: '한국어', es: 'Español', fr: 'Français' };
+  const DISPLAY_CODES = { ja: 'JP', en: 'EN', vi: 'VN', zh: 'CN', ko: 'KR', es: 'ES', fr: 'FR' };
   const FONT_STACKS = {
     ja: '"Noto Sans JP", "Plus Jakarta Sans", sans-serif',
     zh: '"Noto Sans SC", "Noto Sans JP", sans-serif',
@@ -791,7 +792,7 @@ const attributeRows = [
     const render = () => {
       wrap.querySelector('.vn-i18n-current').textContent = LABELS[currentLanguage];
       trigger.setAttribute('aria-label', maps[currentLanguage].get('言語を選択') || 'Select language');
-      menu.innerHTML = SUPPORTED.map(code => `<button type="button" role="option" data-language="${code}" aria-selected="${code === currentLanguage}"><span>${LABELS[code]}</span>${code === currentLanguage ? '<span aria-hidden="true">✓</span>' : ''}</button>`).join('');
+      menu.innerHTML = SUPPORTED.map(code => `<button type="button" role="option" data-language="${code}" aria-selected="${code === currentLanguage}"><span class="vn-i18n-option-label"><span class="vn-i18n-code" aria-hidden="true">${DISPLAY_CODES[code]}</span><span>${LABELS[code]}</span></span>${code === currentLanguage ? '<span aria-hidden="true">✓</span>' : ''}</button>`).join('');
       menu.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => setLanguage(button.dataset.language, true)));
     };
     trigger.addEventListener('click', event => {
