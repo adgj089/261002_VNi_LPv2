@@ -662,6 +662,17 @@
   color: #1f6fbd;
 }
 
+.vn-i18n-option-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.vn-i18n-code {
+  width: 24px;
+  flex: 0 0 24px;
+}
+
 .vn-i18n-mobile {
   display: none;
 }
