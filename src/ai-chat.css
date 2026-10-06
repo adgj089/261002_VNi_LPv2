@@ -802,6 +802,8 @@ html[data-language="fr"] header nav {
     .vn-mobile-nav-actions > .vn-i18n-mobile {
       width: 100%;
       margin: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
     }
 
     .vn-mobile-nav-actions .vn-mobile-action-control {
