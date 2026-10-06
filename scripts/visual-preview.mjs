@@ -183,6 +183,117 @@ for (const profile of profiles) {
 }
 
 
+{
+  const profile = { name: 'reason01-desktop-1030', width: 1030, height: 1012 };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1,
+    isMobile: false,
+    hasTouch: false,
+  });
+  const page = await context.newPage();
+
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
+  } catch {}
+  await page.waitForTimeout(1200);
+
+  const reason01Left = page.locator('.reason01-left').first();
+  if (await reason01Left.count()) {
+    await reason01Left.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+  }
+
+  const measurements = await page.evaluate(() => {
+    const left = document.querySelector('.reason01-left');
+    const flow = document.querySelector('.reason01-flow');
+    const flowLabel = document.querySelector('.reason01-flow-label');
+    const right = document.querySelector('.reason01-right');
+    const image = document.querySelector('.reason01-source-image');
+    const visualRow = left?.parentElement || null;
+    const card = visualRow?.parentElement || null;
+
+    const read = (el) => {
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        rect: {
+          left: Math.round(rect.left * 100) / 100,
+          top: Math.round(rect.top * 100) / 100,
+          width: Math.round(rect.width * 100) / 100,
+          height: Math.round(rect.height * 100) / 100,
+          right: Math.round(rect.right * 100) / 100,
+          bottom: Math.round(rect.bottom * 100) / 100,
+        },
+        width: style.width,
+        minWidth: style.minWidth,
+        maxWidth: style.maxWidth,
+        display: style.display,
+        gap: style.gap,
+        padding: style.padding,
+        overflow: style.overflow,
+        whiteSpace: style.whiteSpace,
+        objectFit: style.objectFit,
+      };
+    };
+
+    const cssRulesMatched = [...document.styleSheets].flatMap((sheet) => {
+      try {
+        return [...sheet.cssRules]
+          .filter((rule) => String(rule.cssText || '').includes('reason01-'))
+          .map((rule) => rule.cssText);
+      } catch {
+        return [];
+      }
+    });
+
+    const viewportWidth = window.innerWidth;
+    return {
+      viewport: {
+        width: viewportWidth,
+        height: window.innerHeight,
+      },
+      mediaQueries: {
+        min1024: matchMedia('(min-width: 1024px)').matches,
+        min1280: matchMedia('(min-width: 1280px)').matches,
+      },
+      card: read(card),
+      visualRow: read(visualRow),
+      left: read(left),
+      flow: read(flow),
+      flowLabel: read(flowLabel),
+      right: read(right),
+      image: read(image),
+      widthsPercentOfVisualRow: visualRow
+        ? {
+            left: left ? Math.round((left.getBoundingClientRect().width / visualRow.getBoundingClientRect().width) * 10000) / 100 : null,
+            flow: flow ? Math.round((flow.getBoundingClientRect().width / visualRow.getBoundingClientRect().width) * 10000) / 100 : null,
+            right: right ? Math.round((right.getBoundingClientRect().width / visualRow.getBoundingClientRect().width) * 10000) / 100 : null,
+          }
+        : null,
+      cssRulesMatched,
+    };
+  });
+
+  await page.screenshot({
+    path: path.join(outputDir, `${profile.name}-viewport.png`),
+    fullPage: false,
+    animations: 'disabled',
+  });
+
+  await fs.writeFile(
+    path.join(outputDir, `${profile.name}-diagnostics.json`),
+    JSON.stringify(measurements, null, 2)
+  );
+
+  summary.profiles[profile.name] = measurements;
+  await context.close();
+}
+
+
 const step6Profiles = [
   { name: 'mobile-step6-390', width: 390, height: 844 },
   { name: 'mobile-step6-320', width: 320, height: 844 },
