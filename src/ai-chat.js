@@ -787,12 +787,28 @@ const step6Rows = [
   ["← 横にスワイプして比較 →","← Swipe horizontally to compare →","← Vuốt ngang để so sánh →","← 横向滑动进行比较 →","← 가로로 스와이프하여 비교 →","← Desliza horizontalmente para comparar →","← Balayez horizontalement pour comparer →"],
 ];
 
+const step6FixRows = [
+  ["IT・DX","IT/DX","IT/DX","IT/DX","IT/DX","IT/DX","IT/DX"],
+  ["6件表示中","6 items shown","Đang hiển thị 6 mục","显示6条","6건 표시 중","6 elementos mostrados","6 éléments affichés"],
+  ["全データ382件中 6件を表示","Showing 6 of 382 records","Hiển thị 6/382 bản ghi","显示382条中的6条","전체 382건 중 6건 표시","Mostrando 6 de 382 registros","Affichage de 6 éléments sur 382"],
+  ["28.5% (平均粗利)","28.5% (avg. gross margin)","28,5% (biên lợi nhuận gộp TB)","28.5%（平均毛利率）","28.5% (평균 매출총이익률)","28,5 % (margen bruto medio)","28,5 % (marge brute moyenne)"],
+  ["取得期間: 平均4.2ヶ月","Lead time: 4.2 months on average","Thời gian: trung bình 4,2 tháng","办理周期：平均4.2个月","취득 기간: 평균 4.2개월","Plazo: 4,2 meses de media","Délai : 4,2 mois en moyenne"],
+  ["4.8% (需給逼迫)","4.8% (tight supply-demand)","4,8% (cung-cầu thắt chặt)","4.8%（供需紧张）","4.8% (수급 타이트)","4,8 % (oferta-demanda ajustada)","4,8 % (offre-demande tendue)"],
+  ["$135 / ㎡ / 月","$135 / m² / month","135 USD / m² / tháng","135美元 / ㎡ / 月","$135 / ㎡ / 월","135 USD / m² / mes","135 $ / m² / mois"],
+  ["$920 / 月","$920 / month","920 USD / tháng","920美元 / 月","$920 / 월","920 USD / mes","920 $ / mois"],
+  ["出力履歴: 3件","Export history: 3 items","Lịch sử xuất: 3 mục","导出历史：3条","출력 이력: 3건","Historial de exportación: 3 elementos","Historique des exports : 3 éléments"],
+  ["「PDF」レポートを生成・出力","Generate & export PDF report","Tạo & xuất báo cáo PDF","生成并导出PDF报告","PDF 보고서 생성·출력","Generar y exportar informe PDF","Générer et exporter le rapport PDF"],
+  ["「CSV」レポートを生成・出力","Generate & export CSV report","Tạo & xuất báo cáo CSV","生成并导出CSV报告","CSV 보고서 생성·출력","Generar y exportar informe CSV","Générer et exporter le rapport CSV"],
+  ["「PPTX」レポートを生成・出力","Generate & export PPTX report","Tạo & xuất báo cáo PPTX","生成并导出PPTX报告","PPTX 보고서 생성·출력","Generar y exportar informe PPTX","Générer et exporter le rapport PPTX"],
+  ["表示","Show","Hiển thị","显示","표시","Mostrar","Afficher"],
+];
+
 const attributeRows = [
     ['現地情報と照合 - Checked with local sources','Cross-checked with local sources','Đối chiếu với nguồn địa phương','已与本地信息核对','현지 정보와 대조 - Checked with local sources','Contrastado con fuentes locales','Recoupé avec des sources locales'],
     ['ベトナム全土の散らばった各種データ','Dispersed data from across Vietnam','Dữ liệu phân tán trên toàn Việt Nam','分散在越南各地的数据','베트남 전역에 흩어진 각종 데이터','Datos dispersos por todo Vietnam','Données dispersées dans tout le Vietnam'],
   ];
 
-  const allRows = [...rows, ...extraRows, ...faqRows, ...modalRows, ...fragmentRows, ...chatRows, ...modalFragmentRows, ...residualRows, ...step6Rows, ...attributeRows];
+  const allRows = [...rows, ...extraRows, ...faqRows, ...modalRows, ...fragmentRows, ...chatRows, ...modalFragmentRows, ...residualRows, ...step6Rows, ...step6FixRows, ...attributeRows];
   const maps = Object.fromEntries(SUPPORTED.map((lang, index) => [lang, new Map(allRows.map(row => [row[0], row[index] || row[0]]))]));
   const originals = new WeakMap();
   let currentLanguage = 'ja';
