@@ -4446,12 +4446,20 @@ const step6FixRows = [
   ["表示","Show","Hiển thị","显示","표시","Mostrar","Afficher"],
 ];
 
+const toastRows = [
+  ["確認データ(CSV)をダウンロードしました","Verified data (CSV) downloaded","Đã tải dữ liệu đã xác minh (CSV)","已下载核验数据（CSV）","확인 데이터(CSV)를 다운로드했습니다","Datos verificados (CSV) descargados","Données vérifiées (CSV) téléchargées"],
+  ["レポート生成のシミュレーションを開始しました","Report-generation simulation started","Đã bắt đầu mô phỏng tạo báo cáo","已开始报告生成模拟","보고서 생성 시뮬레이션을 시작했습니다","Simulación de generación de informe iniciada","Simulation de génération de rapport lancée"],
+  ["EC市場トレンドレポートを開きます","Opening e-commerce market trends report","Đang mở báo cáo xu hướng thị trường TMĐT","正在打开电商市场趋势报告","이커머스 시장 트렌드 보고서를 엽니다","Abriendo informe de tendencias de e-commerce","Ouverture du rapport sur les tendances e-commerce"],
+  ["製造業レポートを開きます","Opening manufacturing report","Đang mở báo cáo ngành sản xuất","正在打开制造业报告","제조업 보고서를 엽니다","Abriendo informe de manufactura","Ouverture du rapport sur l’industrie manufacturière"],
+  ["消費者インサイトレポートを開きます","Opening consumer insights report","Đang mở báo cáo insight người tiêu dùng","正在打开消费者洞察报告","소비자 인사이트 보고서를 엽니다","Abriendo informe de insights del consumidor","Ouverture du rapport sur les insights consommateurs"],
+];
+
 const attributeRows = [
     ['現地情報と照合 - Checked with local sources','Cross-checked with local sources','Đối chiếu với nguồn địa phương','已与本地信息核对','현지 정보와 대조 - Checked with local sources','Contrastado con fuentes locales','Recoupé avec des sources locales'],
     ['ベトナム全土の散らばった各種データ','Dispersed data from across Vietnam','Dữ liệu phân tán trên toàn Việt Nam','分散在越南各地的数据','베트남 전역에 흩어진 각종 데이터','Datos dispersos por todo Vietnam','Données dispersées dans tout le Vietnam'],
   ];
 
-  const allRows = [...rows, ...extraRows, ...faqRows, ...modalRows, ...fragmentRows, ...chatRows, ...modalFragmentRows, ...residualRows, ...step6Rows, ...step6FixRows, ...attributeRows];
+  const allRows = [...rows, ...extraRows, ...faqRows, ...modalRows, ...fragmentRows, ...chatRows, ...modalFragmentRows, ...residualRows, ...step6Rows, ...step6FixRows, ...toastRows, ...attributeRows];
   const maps = Object.fromEntries(SUPPORTED.map((lang, index) => [lang, new Map(allRows.map(row => [row[0], row[index] || row[0]]))]));
   const originals = new WeakMap();
   let currentLanguage = 'ja';
@@ -4470,16 +4478,66 @@ const attributeRows = [
     return 'ja';
   };
 
+  const translateDynamicText = (source, language) => {
+    if (language === 'ja') return source;
+
+    let match = source.match(/^カスタムレポート（(.+?)）の出力が完了しました$/);
+    if (match) {
+      const format = match[1];
+      return {
+        en: `Custom report (${format}) export completed`,
+        vi: `Đã xuất xong báo cáo tùy chỉnh (${format})`,
+        zh: `自定义报告（${format}）导出完成`,
+        ko: `맞춤 보고서(${format}) 내보내기가 완료되었습니다`,
+        es: `Informe personalizado (${format}) exportado correctamente`,
+        fr: `Rapport personnalisé (${format}) exporté avec succès`,
+      }[language] || source;
+    }
+
+    match = source.match(/^「(.+)」のダウンロードを開始しました$/);
+    if (match) {
+      const title = maps[language].get(match[1]) || match[1];
+      return {
+        en: `Started downloading “${title}”`,
+        vi: `Đã bắt đầu tải xuống “${title}”`,
+        zh: `已开始下载“${title}”`,
+        ko: `“${title}” 다운로드를 시작했습니다`,
+        es: `Se inició la descarga de «${title}»`,
+        fr: `Téléchargement de « ${title} » démarré`,
+      }[language] || source;
+    }
+
+    match = source.match(/^(.+?) を再ダウンロードしました$/);
+    if (match) {
+      const name = match[1];
+      return {
+        en: `${name} downloaded again`,
+        vi: `Đã tải lại ${name}`,
+        zh: `已重新下载 ${name}`,
+        ko: `${name} 재다운로드 완료`,
+        es: `${name} descargado de nuevo`,
+        fr: `${name} téléchargé à nouveau`,
+      }[language] || source;
+    }
+
+    return null;
+  };
+
+  const isDynamicTranslatable = source =>
+    /^カスタムレポート（.+?）の出力が完了しました$/.test(source) ||
+    /^「.+」のダウンロードを開始しました$/.test(source) ||
+    /^.+? を再ダウンロードしました$/.test(source);
+
   const translateTextNode = node => {
     if (!node.nodeValue || node.parentElement?.closest('script,style,[data-i18n-ignore]')) return;
     let source = originals.get(node);
     const trimmed = normalize(node.nodeValue);
-    if (!source && maps.ja.has(trimmed)) {
+    if (!source && (maps.ja.has(trimmed) || isDynamicTranslatable(trimmed))) {
       source = trimmed;
       originals.set(node, source);
     }
     if (!source) return;
-    const replacement = maps[currentLanguage].get(source) || source;
+    const replacement = maps[currentLanguage].get(source) || translateDynamicText(source, currentLanguage) || source;
     const leading = node.nodeValue.match(/^\s*/)?.[0] || '';
     const trailing = node.nodeValue.match(/\s*$/)?.[0] || '';
     node.nodeValue = `${leading}${replacement}${trailing}`;
