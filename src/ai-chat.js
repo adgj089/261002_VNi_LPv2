@@ -796,7 +796,7 @@ const attributeRows = [
     };
     trigger.addEventListener('click', event => {
       event.stopPropagation();
-      const open = menu.hidden;
+      const open = menu.closest('.vn-i18n-desktop') ? menu.hidden || !menu.classList.contains('is-open') : menu.hidden;
       document.querySelectorAll('.vn-i18n-menu').forEach(other => {
         if (other !== menu) closeLanguageMenu(other);
       });
