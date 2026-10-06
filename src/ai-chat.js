@@ -997,13 +997,11 @@ const attributeRows = [
     const trigger = menu.previousElementSibling;
     trigger?.setAttribute('aria-expanded', 'false');
 
-    if (menu.closest('.vn-i18n-desktop') && !menu.hidden) {
+    if (!menu.hidden) {
       menu.classList.remove('is-open');
       window.setTimeout(() => {
         if (!menu.classList.contains('is-open')) menu.hidden = true;
       }, LANGUAGE_MENU_TRANSITION_MS);
-    } else {
-      menu.hidden = true;
     }
 
     if (focusTrigger) trigger?.focus();
@@ -1013,10 +1011,8 @@ const attributeRows = [
     menu.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
 
-    if (menu.closest('.vn-i18n-desktop')) {
-      void menu.offsetHeight;
-      menu.classList.add('is-open');
-    }
+    void menu.offsetHeight;
+    menu.classList.add('is-open');
   };
 
   const languageMenu = mode => {
