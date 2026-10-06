@@ -625,6 +625,7 @@
 .vn-i18n-desktop .vn-i18n-menu {
   left: -6px;
   right: auto;
+  width: 160px;
   opacity: 0;
   transform: translateY(-4px);
   pointer-events: none;
