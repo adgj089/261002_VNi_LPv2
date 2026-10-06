@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - reason01-safe-preview
   workflow_dispatch:
 
 permissions:
@@ -31,8 +32,7 @@ jobs:
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build single HTML
-        run: npm run build
+      # Safety-preview branch: serve committed root index.html directly.
 
       - name: Install Playwright
         run: |
