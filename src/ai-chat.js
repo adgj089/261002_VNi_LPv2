@@ -878,7 +878,7 @@ const attributeRows = [
       }[language] || source;
     }
 
-    match = source.match(/^(\\d+) \\/ (\\d+) 完了$/);
+    match = source.match(/^(\d+) \/ (\d+) 完了$/);
     if (match) {
       const done = match[1];
       const total = match[2];
@@ -892,7 +892,7 @@ const attributeRows = [
       }[language] || source;
     }
 
-    match = source.match(/^(\\d+)件表示中$/);
+    match = source.match(/^(\d+)件表示中$/);
     if (match) {
       const count = match[1];
       return {
@@ -905,7 +905,7 @@ const attributeRows = [
       }[language] || source;
     }
 
-    match = source.match(/^全データ(\\d+)件中 (\\d+)件を表示$/);
+    match = source.match(/^全データ(\d+)件中 (\d+)件を表示$/);
     if (match) {
       const total = match[1];
       const count = match[2];
@@ -919,7 +919,7 @@ const attributeRows = [
       }[language] || source;
     }
 
-    match = source.match(/^出力履歴: (\\d+)件$/);
+    match = source.match(/^出力履歴: (\d+)件$/);
     if (match) {
       const count = match[1];
       return {
@@ -939,10 +939,10 @@ const attributeRows = [
     /^カスタムレポート（.+?）の出力が完了しました$/.test(source) ||
     /^「.+」のダウンロードを開始しました$/.test(source) ||
     /^.+? を再ダウンロードしました$/.test(source) ||
-    /^\\d+ \\/ \\d+ 完了$/.test(source) ||
-    /^\\d+件表示中$/.test(source) ||
-    /^全データ\\d+件中 \\d+件を表示$/.test(source) ||
-    /^出力履歴: \\d+件$/.test(source);
+    /^\d+ \/ \d+ 完了$/.test(source) ||
+    /^\d+件表示中$/.test(source) ||
+    /^全データ\d+件中 \d+件を表示$/.test(source) ||
+    /^出力履歴: \d+件$/.test(source);
 
   const translateTextNode = node => {
     if (!node.nodeValue || node.parentElement?.closest('script,style,[data-i18n-ignore]')) return;
