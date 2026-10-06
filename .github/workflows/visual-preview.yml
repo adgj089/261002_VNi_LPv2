@@ -41,7 +41,7 @@ jobs:
 
       - name: Start local preview server
         run: |
-          node server.js > /tmp/vni-preview-server.log 2>&1 &
+          python3 -m http.server 3000 --bind 127.0.0.1 > /tmp/vni-preview-server.log 2>&1 &
           echo $! > /tmp/vni-preview-server.pid
 
       - name: Wait for preview server
