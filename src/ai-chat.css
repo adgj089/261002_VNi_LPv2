@@ -715,6 +715,7 @@ html[data-language="fr"] header nav {
 
   .vn-i18n-mobile {
     display: block;
+    position: relative;
     width: 100%;
     margin-bottom: 12px;
     padding-bottom: 12px;
@@ -728,12 +729,12 @@ html[data-language="fr"] header nav {
 
   .vn-i18n-mobile .vn-i18n-menu {
     position: absolute;
-    top: calc(100% - 4px);
-    left: 16px;
-    right: 16px;
-    width: auto;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    width: 100%;
     margin: 0;
-    box-shadow: none;
+    box-shadow: 0 12px 30px rgba(15, 42, 80, 0.16);
   }
 
   .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
