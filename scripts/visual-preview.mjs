@@ -79,6 +79,39 @@ for (const profile of profiles) {
 
   await page.waitForTimeout(1200);
 
+  await page.screenshot({
+    path: path.join(outputDir, `${profile.name}-viewport.png`),
+    fullPage: false,
+    animations: 'disabled',
+  });
+
+  // Trigger scroll-based reveal animations and lazy content before the full-page capture.
+  await page.evaluate(async () => {
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const step = Math.max(Math.floor(window.innerHeight * 0.8), 400);
+    const maxScroll = document.documentElement.scrollHeight;
+
+    for (let y = 0; y < maxScroll; y += step) {
+      window.scrollTo(0, y);
+      await delay(120);
+    }
+
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    await delay(500);
+
+    const pendingImages = [...document.images]
+      .filter((img) => !img.complete)
+      .map((img) => new Promise((resolve) => {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+        setTimeout(resolve, 5000);
+      }));
+
+    await Promise.all(pendingImages);
+    window.scrollTo(0, 0);
+    await delay(400);
+  });
+
   const diagnostics = await page.evaluate(() => {
     const root = document.documentElement;
     const body = document.body;
@@ -124,12 +157,6 @@ for (const profile of profiles) {
       buttonCount: document.querySelectorAll('button, [role="button"], input[type="submit"]').length,
       h1Count: document.querySelectorAll('h1').length,
     };
-  });
-
-  await page.screenshot({
-    path: path.join(outputDir, `${profile.name}-viewport.png`),
-    fullPage: false,
-    animations: 'disabled',
   });
 
   await page.screenshot({
