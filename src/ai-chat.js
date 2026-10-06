@@ -753,6 +753,34 @@ const attributeRows = [
     root.querySelectorAll('.vn-ai-chat-typing .vn-ai-chat-sr-only').forEach(element => { element.textContent = copy.sending; });
   };
 
+  const LANGUAGE_MENU_TRANSITION_MS = 200;
+
+  const closeLanguageMenu = (menu, focusTrigger = false) => {
+    const trigger = menu.previousElementSibling;
+    trigger?.setAttribute('aria-expanded', 'false');
+
+    if (menu.closest('.vn-i18n-desktop') && !menu.hidden) {
+      menu.classList.remove('is-open');
+      window.setTimeout(() => {
+        if (!menu.classList.contains('is-open')) menu.hidden = true;
+      }, LANGUAGE_MENU_TRANSITION_MS);
+    } else {
+      menu.hidden = true;
+    }
+
+    if (focusTrigger) trigger?.focus();
+  };
+
+  const openLanguageMenu = (menu, trigger) => {
+    menu.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+
+    if (menu.closest('.vn-i18n-desktop')) {
+      void menu.offsetHeight;
+      menu.classList.add('is-open');
+    }
+  };
+
   const languageMenu = mode => {
     const wrap = document.createElement('div');
     wrap.className = `vn-i18n-switcher vn-i18n-${mode}`;
@@ -769,10 +797,15 @@ const attributeRows = [
     trigger.addEventListener('click', event => {
       event.stopPropagation();
       const open = menu.hidden;
-      document.querySelectorAll('.vn-i18n-menu').forEach(other => { other.hidden = true; other.previousElementSibling?.setAttribute('aria-expanded','false'); });
-      menu.hidden = !open;
-      trigger.setAttribute('aria-expanded', String(open));
-      if (open) menu.querySelector('[aria-selected="true"]')?.focus();
+      document.querySelectorAll('.vn-i18n-menu').forEach(other => {
+        if (other !== menu) closeLanguageMenu(other);
+      });
+      if (open) {
+        openLanguageMenu(menu, trigger);
+        menu.querySelector('[aria-selected="true"]')?.focus();
+      } else {
+        closeLanguageMenu(menu);
+      }
     });
     trigger.addEventListener('keydown', event => {
       if (['ArrowDown','Enter',' '].includes(event.key) && menu.hidden) { event.preventDefault(); trigger.click(); }
@@ -782,7 +815,7 @@ const attributeRows = [
       const index = options.indexOf(document.activeElement);
       if (event.key === 'ArrowDown') { event.preventDefault(); options[(index + 1) % options.length].focus(); }
       if (event.key === 'ArrowUp') { event.preventDefault(); options[(index - 1 + options.length) % options.length].focus(); }
-      if (event.key === 'Escape') { menu.hidden = true; trigger.setAttribute('aria-expanded','false'); trigger.focus(); }
+      if (event.key === 'Escape') { closeLanguageMenu(menu, true); }
     });
     wrap.refresh = render;
     render();
@@ -845,7 +878,7 @@ const attributeRows = [
   }
 
   document.addEventListener('click', event => {
-    if (!event.target.closest('.vn-i18n-switcher')) document.querySelectorAll('.vn-i18n-menu').forEach(menu => { menu.hidden = true; menu.previousElementSibling?.setAttribute('aria-expanded','false'); });
+    if (!event.target.closest('.vn-i18n-switcher')) document.querySelectorAll('.vn-i18n-menu').forEach(menu => closeLanguageMenu(menu));
   });
   observer = new MutationObserver(mutations => {
     if (applying) return;
