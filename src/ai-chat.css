@@ -727,9 +727,12 @@ html[data-language="fr"] header nav {
   }
 
   .vn-i18n-mobile .vn-i18n-menu {
-    position: static;
-    width: calc(100% - 32px);
-    margin: 8px auto 0;
+    position: absolute;
+    top: calc(100% - 4px);
+    left: 16px;
+    right: 16px;
+    width: auto;
+    margin: 0;
     box-shadow: none;
   }
 
