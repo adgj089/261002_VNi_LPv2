@@ -206,6 +206,77 @@ const clickForStep6Qa = async (locator) => {
   }
 };
 
+{
+  const profile = { name: 'tablet-actions-1023', width: 1023, height: 947 };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1,
+    isMobile: false,
+    hasTouch: false,
+  });
+  const page = await context.newPage();
+
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
+  } catch {}
+  await page.waitForTimeout(1200);
+
+  const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
+  const hamburgerClickMethod = await clickForStep6Qa(hamburger);
+  await page.waitForTimeout(500);
+
+  const actionGroup = page.locator('.vn-mobile-nav-actions:visible').first();
+  const cta = actionGroup.locator(':scope > button');
+  const languageTrigger = actionGroup.locator('.vn-i18n-trigger');
+  const measurements = await page.evaluate(() => {
+    const group = document.querySelector('.vn-mobile-nav-actions');
+    const cta = group?.querySelector(':scope > button');
+    const language = group?.querySelector('.vn-i18n-trigger');
+    const read = (el) => {
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        rect: {
+          left: Math.round(rect.left * 100) / 100,
+          top: Math.round(rect.top * 100) / 100,
+          width: Math.round(rect.width * 100) / 100,
+          height: Math.round(rect.height * 100) / 100,
+          right: Math.round(rect.right * 100) / 100,
+          bottom: Math.round(rect.bottom * 100) / 100,
+        },
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight,
+        borderRadius: style.borderRadius,
+        padding: style.padding,
+        lineHeight: style.lineHeight,
+      };
+    };
+    return {
+      cta: read(cta),
+      language: read(language),
+      sameHeight: !!cta && !!language && Math.abs(cta.getBoundingClientRect().height - language.getBoundingClientRect().height) < 0.5,
+      sameTop: !!cta && !!language && Math.abs(cta.getBoundingClientRect().top - language.getBoundingClientRect().top) < 0.5,
+      sameWidth: !!cta && !!language && Math.abs(cta.getBoundingClientRect().width - language.getBoundingClientRect().width) < 0.5,
+    };
+  });
+
+  await page.screenshot({
+    path: path.join(outputDir, `${profile.name}-menu-open.png`),
+    fullPage: false,
+    animations: 'disabled',
+  });
+
+  await fs.writeFile(
+    path.join(outputDir, `${profile.name}-diagnostics.json`),
+    JSON.stringify({ hamburgerClickMethod, ...measurements }, null, 2)
+  );
+
+  await context.close();
+}
+
 for (const profile of step6Profiles) {
   const context = await browser.newContext({
     viewport: { width: profile.width, height: profile.height },
