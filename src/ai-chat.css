@@ -768,6 +768,28 @@ html[data-language="fr"] header nav {
   .vn-i18n-mobile .vn-i18n-current {
     max-width: none;
   }
+
+  @media (min-width: 640px) {
+    .vn-mobile-nav-list {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 32px;
+      row-gap: 8px;
+    }
+
+    .vn-mobile-nav-list > .vn-i18n-mobile,
+    .vn-mobile-nav-list > button {
+      grid-column: 1 / -1;
+    }
+
+    .vn-mobile-nav-list > .vn-i18n-mobile {
+      margin-bottom: 4px;
+    }
+
+    .vn-mobile-nav-list > button {
+      margin-top: 8px;
+    }
+  }
 }
 
 
