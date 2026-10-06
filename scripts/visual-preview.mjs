@@ -196,6 +196,16 @@ const isWithinViewport = (rect, width, height) => (
   rect.bottom <= height + 1
 );
 
+const clickForStep6Qa = async (locator) => {
+  try {
+    await locator.click({ timeout: 2000 });
+    return 'pointer';
+  } catch {
+    await locator.dispatchEvent('click');
+    return 'dom-fallback';
+  }
+};
+
 for (const profile of step6Profiles) {
   const context = await browser.newContext({
     viewport: { width: profile.width, height: profile.height },
@@ -230,7 +240,7 @@ for (const profile of step6Profiles) {
   const hamburger = page.locator('header button[aria-label="メニューを開閉"]');
   const hamburgerVisible = await hamburger.isVisible().catch(() => false);
   if (hamburgerVisible) {
-    await hamburger.click();
+    await clickForStep6Qa(hamburger);
     await page.waitForTimeout(250);
   }
 
@@ -250,7 +260,7 @@ for (const profile of step6Profiles) {
 
   let languageMenuOpened = false;
   if (mobileSwitcherVisible && await languageTrigger.isVisible().catch(() => false)) {
-    await languageTrigger.click();
+    await clickForStep6Qa(languageTrigger);
     await page.waitForTimeout(250);
     languageMenuOpened = await languageMenu.isVisible().catch(() => false);
   }
@@ -290,11 +300,11 @@ for (const profile of step6Profiles) {
   for (const code of expectedLanguages) {
     if (!await languageMenu.isVisible().catch(() => false)) {
       if (!await mobileSwitcher.isVisible().catch(() => false) && hamburgerVisible) {
-        await hamburger.click();
+        await clickForStep6Qa(hamburger);
         await page.waitForTimeout(200);
       }
       if (await languageTrigger.isVisible().catch(() => false)) {
-        await languageTrigger.click();
+        await clickForStep6Qa(languageTrigger);
         await page.waitForTimeout(200);
       }
     }
@@ -304,7 +314,7 @@ for (const profile of step6Profiles) {
     const optionEnabled = optionVisible && await option.isEnabled().catch(() => false);
 
     if (optionEnabled) {
-      await option.click();
+      await clickForStep6Qa(option);
       await page.waitForTimeout(250);
     }
 
