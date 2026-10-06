@@ -237,11 +237,12 @@ for (const profile of step6Profiles) {
   } catch {}
   await page.waitForTimeout(1200);
 
-  const hamburger = page.locator('header button[aria-label="メニューを開閉"]');
+  const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
   const hamburgerVisible = await hamburger.isVisible().catch(() => false);
+  let hamburgerClickMethod = null;
   if (hamburgerVisible) {
-    await clickForStep6Qa(hamburger);
-    await page.waitForTimeout(250);
+    hamburgerClickMethod = await clickForStep6Qa(hamburger);
+    await page.waitForTimeout(500);
   }
 
   const whyLink = page.locator('header a[href="#why-choose-us"]:visible').first();
@@ -259,8 +260,9 @@ for (const profile of step6Profiles) {
   });
 
   let languageMenuOpened = false;
+  let languageTriggerClickMethod = null;
   if (mobileSwitcherVisible && await languageTrigger.isVisible().catch(() => false)) {
-    await clickForStep6Qa(languageTrigger);
+    languageTriggerClickMethod = await clickForStep6Qa(languageTrigger);
     await page.waitForTimeout(250);
     languageMenuOpened = await languageMenu.isVisible().catch(() => false);
   }
@@ -354,7 +356,9 @@ for (const profile of step6Profiles) {
   const qa = {
     profile: { width: profile.width, height: profile.height },
     hamburgerVisible,
+    hamburgerClickMethod,
     mobileSwitcherVisible,
+    languageTriggerClickMethod,
     languageMenuOpened,
     menuComputedPosition,
     overlayByPosition: menuComputedPosition === 'absolute' || menuComputedPosition === 'fixed',
