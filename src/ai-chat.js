@@ -1069,7 +1069,7 @@ const attributeRows = [
     if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) {
       const mobileCta = [...mobilePanel.children].find(element => element.tagName === 'BUTTON');
       const switcher = languageMenu('mobile');
-      if (mobileCta) mobileCta.before(switcher);
+      if (mobileCta) mobileCta.after(switcher);
       else mobilePanel.append(switcher);
     }
   };
