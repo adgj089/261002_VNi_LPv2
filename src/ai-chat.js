@@ -948,7 +948,7 @@ const attributeRows = [
     if (!node.nodeValue || node.parentElement?.closest('script,style,[data-i18n-ignore]')) return;
     let source = originals.get(node);
     const trimmed = normalize(node.nodeValue);
-    if (!source && (maps.ja.has(trimmed) || isDynamicTranslatable(trimmed))) {
+    if (maps.ja.has(trimmed) || isDynamicTranslatable(trimmed)) {
       source = trimmed;
       originals.set(node, source);
     }
