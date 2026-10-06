@@ -3641,21 +3641,62 @@ html[data-language="fr"] header nav {
     .vn-mobile-nav-list {
       display: grid !important;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 32px;
+      column-gap: 24px;
       row-gap: 8px;
+    }
+
+    .vn-mobile-nav-list > * {
+      margin-top: 0 !important;
+    }
+
+    .vn-mobile-nav-list > a {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      padding-block: 8px;
+      border-bottom: 1px solid #f3f4f6;
     }
 
     .vn-mobile-nav-list > .vn-i18n-mobile,
     .vn-mobile-nav-list > button {
       grid-column: 1 / -1;
+      width: 56%;
+      justify-self: center;
     }
 
     .vn-mobile-nav-list > .vn-i18n-mobile {
-      margin-bottom: 4px;
+      margin-top: 4px !important;
+      margin-bottom: 0;
     }
 
     .vn-mobile-nav-list > button {
-      margin-top: 8px;
+      margin-top: 0 !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .vn-mobile-nav-list {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      column-gap: 24px;
+    }
+
+    .vn-mobile-nav-list > a {
+      grid-column: span 2;
+    }
+
+    .vn-mobile-nav-list > .vn-i18n-mobile,
+    .vn-mobile-nav-list > button {
+      grid-column: span 3;
+      width: 100%;
+      align-self: center;
+    }
+
+    .vn-mobile-nav-list > .vn-i18n-mobile {
+      grid-column: 1 / span 3;
+    }
+
+    .vn-mobile-nav-list > button {
+      grid-column: 4 / span 3;
     }
   }
 }
@@ -4745,7 +4786,12 @@ const attributeRows = [
     const hamburger = header.querySelector('button[aria-label]');
     const mobilePanels = [...header.querySelectorAll('div')].filter(element => element !== hamburger?.parentElement && element.querySelector('a[href="#why-choose-us"]') && !element.classList.contains('hidden'));
     const mobilePanel = mobilePanels.sort((a,b)=>a.childElementCount-b.childElementCount)[0];
-    if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) mobilePanel.prepend(languageMenu('mobile'));
+    if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) {
+      const mobileCta = [...mobilePanel.children].find(element => element.tagName === 'BUTTON');
+      const switcher = languageMenu('mobile');
+      if (mobileCta) mobileCta.before(switcher);
+      else mobilePanel.append(switcher);
+    }
   };
 
   const updateMetadata = () => {
