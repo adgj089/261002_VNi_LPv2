@@ -735,12 +735,22 @@ html[data-language="fr"] header nav {
     width: 100%;
     margin: 0;
     box-shadow: 0 12px 30px rgba(15, 42, 80, 0.16);
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 200ms ease;
   }
 
   .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
+  }
+
+  .vn-i18n-mobile .vn-i18n-menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   @media (min-width: 480px) {
