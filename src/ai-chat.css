@@ -622,6 +622,19 @@
   box-shadow: 0 12px 30px rgba(15, 42, 80, 0.16);
 }
 
+.vn-i18n-desktop .vn-i18n-menu {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.vn-i18n-desktop .vn-i18n-menu.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .vn-i18n-menu[hidden] {
   display: none;
 }
