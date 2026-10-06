@@ -243,7 +243,7 @@ for (const profile of step6Profiles) {
   const mobileSwitcherVisible = await mobileSwitcher.isVisible().catch(() => false);
 
   await page.screenshot({
-    path: path.join(outputDir, \`\${profile.name}-menu-open.png\`),
+    path: path.join(outputDir, `${profile.name}-menu-open.png`),
     fullPage: false,
     animations: 'disabled',
   });
@@ -279,7 +279,7 @@ for (const profile of step6Profiles) {
   ).catch(() => []);
 
   await page.screenshot({
-    path: path.join(outputDir, \`\${profile.name}-language-open.png\`),
+    path: path.join(outputDir, `${profile.name}-language-open.png`),
     fullPage: false,
     animations: 'disabled',
   });
@@ -299,7 +299,7 @@ for (const profile of step6Profiles) {
       }
     }
 
-    const option = languageMenu.locator(\`[data-language="\${code}"]\`);
+    const option = languageMenu.locator(`[data-language="${code}"]`);
     const optionVisible = await option.isVisible().catch(() => false);
     const optionEnabled = optionVisible && await option.isEnabled().catch(() => false);
 
@@ -387,7 +387,7 @@ for (const profile of step6Profiles) {
   };
 
   await fs.writeFile(
-    path.join(outputDir, \`\${profile.name}-diagnostics.json\`),
+    path.join(outputDir, `${profile.name}-diagnostics.json`),
     JSON.stringify(qa, null, 2)
   );
 
