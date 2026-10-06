@@ -4452,6 +4452,7 @@ const toastRows = [
   ["EC市場トレンドレポートを開きます","Opening e-commerce market trends report","Đang mở báo cáo xu hướng thị trường TMĐT","正在打开电商市场趋势报告","이커머스 시장 트렌드 보고서를 엽니다","Abriendo informe de tendencias de e-commerce","Ouverture du rapport sur les tendances e-commerce"],
   ["製造業レポートを開きます","Opening manufacturing report","Đang mở báo cáo ngành sản xuất","正在打开制造业报告","제조업 보고서를 엽니다","Abriendo informe de manufactura","Ouverture du rapport sur l’industrie manufacturière"],
   ["消費者インサイトレポートを開きます","Opening consumer insights report","Đang mở báo cáo insight người tiêu dùng","正在打开消费者洞察报告","소비자 인사이트 보고서를 엽니다","Abriendo informe de insights del consumidor","Ouverture du rapport sur les insights consommateurs"],
+  ["隠す","Hide","Ẩn","隐藏","숨기기","Ocultar","Masquer"],
 ];
 
 const attributeRows = [
@@ -4520,13 +4521,71 @@ const attributeRows = [
       }[language] || source;
     }
 
+    match = source.match(/^(\\d+) \\/ (\\d+) 完了$/);
+    if (match) {
+      const done = match[1];
+      const total = match[2];
+      return {
+        en: `${done} / ${total} complete`,
+        vi: `Hoàn tất ${done} / ${total}`,
+        zh: `已完成 ${done} / ${total}`,
+        ko: `${done} / ${total} 완료`,
+        es: `${done} / ${total} completadas`,
+        fr: `${done} / ${total} terminées`,
+      }[language] || source;
+    }
+
+    match = source.match(/^(\\d+)件表示中$/);
+    if (match) {
+      const count = match[1];
+      return {
+        en: `${count} items shown`,
+        vi: `Đang hiển thị ${count} mục`,
+        zh: `显示${count}条`,
+        ko: `${count}건 표시 중`,
+        es: `${count} elementos mostrados`,
+        fr: `${count} éléments affichés`,
+      }[language] || source;
+    }
+
+    match = source.match(/^全データ(\\d+)件中 (\\d+)件を表示$/);
+    if (match) {
+      const total = match[1];
+      const count = match[2];
+      return {
+        en: `Showing ${count} of ${total} records`,
+        vi: `Hiển thị ${count}/${total} bản ghi`,
+        zh: `显示${total}条中的${count}条`,
+        ko: `전체 ${total}건 중 ${count}건 표시`,
+        es: `Mostrando ${count} de ${total} registros`,
+        fr: `Affichage de ${count} éléments sur ${total}`,
+      }[language] || source;
+    }
+
+    match = source.match(/^出力履歴: (\\d+)件$/);
+    if (match) {
+      const count = match[1];
+      return {
+        en: `Export history: ${count} items`,
+        vi: `Lịch sử xuất: ${count} mục`,
+        zh: `导出历史：${count}条`,
+        ko: `출력 이력: ${count}건`,
+        es: `Historial de exportación: ${count} elementos`,
+        fr: `Historique des exports : ${count} éléments`,
+      }[language] || source;
+    }
+
     return null;
   };
 
   const isDynamicTranslatable = source =>
     /^カスタムレポート（.+?）の出力が完了しました$/.test(source) ||
     /^「.+」のダウンロードを開始しました$/.test(source) ||
-    /^.+? を再ダウンロードしました$/.test(source);
+    /^.+? を再ダウンロードしました$/.test(source) ||
+    /^\\d+ \\/ \\d+ 完了$/.test(source) ||
+    /^\\d+件表示中$/.test(source) ||
+    /^全データ\\d+件中 \\d+件を表示$/.test(source) ||
+    /^出力履歴: \\d+件$/.test(source);
 
   const translateTextNode = node => {
     if (!node.nodeValue || node.parentElement?.closest('script,style,[data-i18n-ignore]')) return;
