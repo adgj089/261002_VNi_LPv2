@@ -729,9 +729,26 @@ html[data-language="fr"] header nav {
   .vn-i18n-mobile .vn-i18n-menu {
     position: static;
     width: calc(100% - 32px);
-    max-width: 420px;
     margin: 8px auto 0;
     box-shadow: none;
+  }
+
+  .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  @media (min-width: 480px) {
+    .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 640px) {
+    .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   .vn-i18n-mobile .vn-i18n-current {
