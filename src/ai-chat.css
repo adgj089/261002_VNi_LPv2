@@ -636,6 +636,10 @@
   pointer-events: auto;
 }
 
+.vn-i18n-desktop .vn-i18n-option-label {
+  margin-left: 78px;
+}
+
 .vn-i18n-menu[hidden] {
   display: none;
 }
