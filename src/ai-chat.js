@@ -1066,7 +1066,12 @@ const attributeRows = [
     const hamburger = header.querySelector('button[aria-label]');
     const mobilePanels = [...header.querySelectorAll('div')].filter(element => element !== hamburger?.parentElement && element.querySelector('a[href="#why-choose-us"]') && !element.classList.contains('hidden'));
     const mobilePanel = mobilePanels.sort((a,b)=>a.childElementCount-b.childElementCount)[0];
-    if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) mobilePanel.prepend(languageMenu('mobile'));
+    if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) {
+      const mobileCta = [...mobilePanel.children].find(element => element.tagName === 'BUTTON');
+      const switcher = languageMenu('mobile');
+      if (mobileCta) mobileCta.before(switcher);
+      else mobilePanel.append(switcher);
+    }
   };
 
   const updateMetadata = () => {
