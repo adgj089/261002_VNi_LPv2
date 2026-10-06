@@ -28,7 +28,9 @@
   right: 24px;
   bottom: 24px;
   display: inline-flex;
-  width: 156px;
+  width: auto;
+  min-width: 156px;
+  max-width: calc(100vw - 48px);
   height: 48px;
   align-items: center;
   justify-content: center;
@@ -105,11 +107,11 @@
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+  max-width: none;
   transition:
     max-width 240ms ease,
     opacity 160ms ease,
     margin 240ms ease;
-  max-width: 90px;
 }
 
 .vn-ai-chat-root .vn-ai-chat-launcher-compact {
@@ -509,6 +511,7 @@
   .vn-ai-chat-root .vn-ai-chat-launcher {
     right: 12px;
     bottom: 12px;
+    max-width: calc(100vw - 24px);
   }
 
   .vn-ai-chat-root .vn-ai-chat-launcher-compact {
@@ -704,23 +707,6 @@ html[data-language="fr"] header nav {
   }
 }
 
-@media (max-width: 767px) {
-  html[data-language="en"] .vn-ai-chat-root .vn-ai-chat-launcher,
-  html[data-language="vi"] .vn-ai-chat-root .vn-ai-chat-launcher,
-  html[data-language="es"] .vn-ai-chat-root .vn-ai-chat-launcher,
-  html[data-language="fr"] .vn-ai-chat-root .vn-ai-chat-launcher {
-    width: auto;
-    min-width: 144px;
-  }
-
-  html[data-language="en"] .vn-ai-chat-root .vn-ai-chat-launcher-compact,
-  html[data-language="vi"] .vn-ai-chat-root .vn-ai-chat-launcher-compact,
-  html[data-language="es"] .vn-ai-chat-root .vn-ai-chat-launcher-compact,
-  html[data-language="fr"] .vn-ai-chat-root .vn-ai-chat-launcher-compact {
-    width: auto;
-    min-width: 140px;
-  }
-}
 
 /* Long localized hero headings */
 html[data-language]:not([data-language="ja"]) .hero-title,
