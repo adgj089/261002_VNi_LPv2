@@ -1069,8 +1069,14 @@ const attributeRows = [
     if (mobilePanel && !mobilePanel.querySelector('.vn-i18n-mobile')) {
       const mobileCta = [...mobilePanel.children].find(element => element.tagName === 'BUTTON');
       const switcher = languageMenu('mobile');
-      if (mobileCta) mobileCta.after(switcher);
-      else mobilePanel.append(switcher);
+      if (mobileCta) {
+        const actions = document.createElement('div');
+        actions.className = 'vn-mobile-nav-actions';
+        mobileCta.before(actions);
+        actions.append(switcher, mobileCta);
+      } else {
+        mobilePanel.append(switcher);
+      }
     }
   };
 
