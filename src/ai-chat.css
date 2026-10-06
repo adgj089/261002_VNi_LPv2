@@ -823,12 +823,13 @@ html[data-language="fr"] header nav {
       align-self: center;
     }
 
-    .vn-mobile-nav-list > .vn-i18n-mobile {
+    .vn-mobile-nav-list > button {
       grid-column: 1 / span 3;
     }
 
-    .vn-mobile-nav-list > button {
+    .vn-mobile-nav-list > .vn-i18n-mobile {
       grid-column: 4 / span 3;
+      margin-top: 0 !important;
     }
   }
 }
