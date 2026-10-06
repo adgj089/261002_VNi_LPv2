@@ -3603,12 +3603,22 @@ html[data-language="fr"] header nav {
     width: 100%;
     margin: 0;
     box-shadow: 0 12px 30px rgba(15, 42, 80, 0.16);
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 200ms ease;
   }
 
   .vn-i18n-mobile .vn-i18n-menu:not([hidden]) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
+  }
+
+  .vn-i18n-mobile .vn-i18n-menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 
   @media (min-width: 480px) {
@@ -4644,13 +4654,11 @@ const attributeRows = [
     const trigger = menu.previousElementSibling;
     trigger?.setAttribute('aria-expanded', 'false');
 
-    if (menu.closest('.vn-i18n-desktop') && !menu.hidden) {
+    if (!menu.hidden) {
       menu.classList.remove('is-open');
       window.setTimeout(() => {
         if (!menu.classList.contains('is-open')) menu.hidden = true;
       }, LANGUAGE_MENU_TRANSITION_MS);
-    } else {
-      menu.hidden = true;
     }
 
     if (focusTrigger) trigger?.focus();
@@ -4660,10 +4668,8 @@ const attributeRows = [
     menu.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
 
-    if (menu.closest('.vn-i18n-desktop')) {
-      void menu.offsetHeight;
-      menu.classList.add('is-open');
-    }
+    void menu.offsetHeight;
+    menu.classList.add('is-open');
   };
 
   const languageMenu = mode => {
