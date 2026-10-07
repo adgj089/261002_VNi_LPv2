@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 const publicDirectory = path.join(__dirname, 'public');
+const assetsDirectory = path.join(__dirname, 'assets');
 const indexFile = path.join(__dirname, 'index.html');
 
 if (!existsSync(indexFile)) {
@@ -17,6 +18,7 @@ if (!existsSync(indexFile)) {
 }
 
 app.use('/public', express.static(publicDirectory));
+app.use('/assets', express.static(assetsDirectory));
 
 app.get('*', (req, res) => {
   res.sendFile(indexFile);
