@@ -3833,7 +3833,7 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
 </style>
 
     <style>
-      /* Desktop header layout stabilization: logo/actions protected, nav uses content width + consistent gaps */
+      /* Desktop header layout stabilization: logo/actions protected, nav cells balanced */
       @media (min-width: 1024px) {
         header > div {
           gap: 1rem;
@@ -3852,12 +3852,12 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
         header nav {
           flex: 1 1 auto;
           min-width: 0;
-          justify-content: flex-start;
-          gap: 1.25rem;
+          justify-content: stretch;
+          gap: 0.75rem;
         }
 
         header nav > a {
-          flex: 0 1 auto;
+          flex: 1 1 0;
           min-width: 0;
           text-align: left;
           line-height: 1.35;
