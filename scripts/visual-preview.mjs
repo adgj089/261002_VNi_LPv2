@@ -361,6 +361,7 @@ for (const profile of reason01DiagnosticProfiles) {
         padding: style.padding,
         backgroundImage: style.backgroundImage,
         zIndex: style.zIndex,
+        className: typeof el.className === 'string' ? el.className : '',
       };
     };
 
@@ -370,6 +371,39 @@ for (const profile of reason01DiagnosticProfiles) {
 
     const pie = document.querySelector('.reason01-pie');
     const pieRow = document.querySelector('.reason01-pie-row');
+
+    const findRulesForSelector = (needle) => {
+      const matches = [];
+      const visit = (rules, context = []) => {
+        for (const rule of [...(rules || [])]) {
+          if (rule.cssRules) {
+            const label = rule.conditionText || rule.media?.mediaText || rule.name || rule.constructor?.name || 'group';
+            visit(rule.cssRules, [...context, label]);
+            continue;
+          }
+          const selector = rule.selectorText || '';
+          if (selector.includes(needle)) {
+            matches.push({
+              selector,
+              cssText: rule.cssText,
+              context,
+            });
+          }
+        }
+      };
+      for (const sheet of [...document.styleSheets]) {
+        try { visit(sheet.cssRules); } catch {}
+      }
+      return matches;
+    };
+
+    const pieClassRuleAudit = {
+      w30: findRulesForSelector('w-\\[30px\\]'),
+      h30: findRulesForSelector('h-\\[30px\\]'),
+      smW34: findRulesForSelector('sm\\:w-\\[34px\\]'),
+      smH34: findRulesForSelector('sm\\:h-\\[34px\\]'),
+      reason01Pie: findRulesForSelector('.reason01-pie'),
+    };
     const dataColumn = document.querySelector('.reason01-right > div:last-child');
     const right = document.querySelector('.reason01-right');
 
@@ -390,6 +424,7 @@ for (const profile of reason01DiagnosticProfiles) {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       mediaMax575: matchMedia('(max-width: 575px)').matches,
       elements: result,
+      pieClassRuleAudit,
       clipping: {
         pieVsPieRow: clipping(pie, pieRow),
         pieRowVsDataColumn: clipping(pieRow, dataColumn),
