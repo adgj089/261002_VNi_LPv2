@@ -294,6 +294,127 @@ for (const profile of profiles) {
 }
 
 
+const reason01DiagnosticProfiles = [
+  { name: 'reason01-mobile-550', width: 550, height: 633 },
+  { name: 'reason01-mobile-390', width: 390, height: 844 },
+];
+
+for (const profile of reason01DiagnosticProfiles) {
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1,
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch {}
+  await page.waitForTimeout(1200);
+
+  const target = page.locator('.reason01-right').first();
+  if (await target.count()) {
+    await target.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+  }
+
+  const diagnostics = await page.evaluate(() => {
+    const selectors = {
+      visualRow: '.reason01-visual-row',
+      right: '.reason01-right',
+      dataColumn: '.reason01-right > div:last-child',
+      barRow: '.reason01-bar-row',
+      pieRow: '.reason01-pie-row',
+      pie: '.reason01-pie',
+    };
+
+    const read = (selector) => {
+      const el = document.querySelector(selector);
+      if (!el) return { exists: false };
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        exists: true,
+        rect: {
+          left: Math.round(rect.left * 100) / 100,
+          top: Math.round(rect.top * 100) / 100,
+          right: Math.round(rect.right * 100) / 100,
+          bottom: Math.round(rect.bottom * 100) / 100,
+          width: Math.round(rect.width * 100) / 100,
+          height: Math.round(rect.height * 100) / 100,
+        },
+        display: style.display,
+        visibility: style.visibility,
+        opacity: style.opacity,
+        width: style.width,
+        height: style.height,
+        minHeight: style.minHeight,
+        maxHeight: style.maxHeight,
+        overflow: style.overflow,
+        overflowX: style.overflowX,
+        overflowY: style.overflowY,
+        position: style.position,
+        flex: style.flex,
+        flexShrink: style.flexShrink,
+        gap: style.gap,
+        padding: style.padding,
+        backgroundImage: style.backgroundImage,
+        zIndex: style.zIndex,
+      };
+    };
+
+    const result = Object.fromEntries(
+      Object.entries(selectors).map(([key, selector]) => [key, read(selector)])
+    );
+
+    const pie = document.querySelector('.reason01-pie');
+    const pieRow = document.querySelector('.reason01-pie-row');
+    const dataColumn = document.querySelector('.reason01-right > div:last-child');
+    const right = document.querySelector('.reason01-right');
+
+    const clipping = (child, parent) => {
+      if (!child || !parent) return null;
+      const c = child.getBoundingClientRect();
+      const p = parent.getBoundingClientRect();
+      return {
+        above: c.top < p.top,
+        below: c.bottom > p.bottom,
+        left: c.left < p.left,
+        right: c.right > p.right,
+        childBottomMinusParentBottom: Math.round((c.bottom - p.bottom) * 100) / 100,
+      };
+    };
+
+    return {
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      mediaMax575: matchMedia('(max-width: 575px)').matches,
+      elements: result,
+      clipping: {
+        pieVsPieRow: clipping(pie, pieRow),
+        pieRowVsDataColumn: clipping(pieRow, dataColumn),
+        pieRowVsRight: clipping(pieRow, right),
+        pieVsRight: clipping(pie, right),
+      },
+    };
+  });
+
+  await page.screenshot({
+    path: path.join(outputDir, `${profile.name}-viewport.png`),
+    fullPage: false,
+    animations: 'disabled',
+  });
+
+  await fs.writeFile(
+    path.join(outputDir, `${profile.name}-diagnostics.json`),
+    JSON.stringify(diagnostics, null, 2)
+  );
+
+  summary.profiles[profile.name] = diagnostics;
+  await context.close();
+}
+
+
 const step6Profiles = [
   { name: 'mobile-step6-390', width: 390, height: 844 },
   { name: 'mobile-step6-320', width: 320, height: 844 },
