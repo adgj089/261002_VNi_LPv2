@@ -31,9 +31,6 @@ jobs:
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build single HTML
-        run: npm run build
-
       - name: Install Playwright
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.63.0
