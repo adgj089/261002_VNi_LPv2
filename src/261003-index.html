@@ -2886,21 +2886,26 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   }
   .reason01-flow {
     position: absolute !important;
-    left: 38% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: 38px !important;
+    inset: 0 !important;
+    width: auto !important;
     padding: 0 !important;
-    gap: 1px !important;
+    gap: 0 !important;
+    transform: none !important;
     z-index: 20 !important;
+    pointer-events: none !important;
   }
   .reason01-flow-label {
-    width: 38px !important;
-    min-width: 38px !important;
-    padding: 3px 1px !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 4px !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 3px 10px !important;
     gap: 0 !important;
     justify-content: center !important;
-    border-radius: 9px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
   }
   .reason01-flow-label > span:first-child {
     display: none !important;
@@ -2909,15 +2914,25 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     display: none !important;
   }
   .reason01-flow-desktop {
-    display: block !important;
+    display: inline !important;
+  }
+  .reason01-flow-desktop br {
+    display: none !important;
   }
   .reason01-flow-text {
     display: block !important;
-    width: 100% !important;
+    width: auto !important;
     text-align: center !important;
     line-height: 1.15 !important;
-    font-size: 8px !important;
+    font-size: 9px !important;
     white-space: nowrap !important;
+  }
+  .reason01-flow > div:last-child {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
   }
   .reason01-right {
     width: 60% !important;
@@ -2938,16 +2953,12 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   .reason01-left {
     width: 36% !important;
   }
-  .reason01-flow {
-    left: 40% !important;
-    width: 44px !important;
-  }
   .reason01-flow-label {
-    width: 44px !important;
-    min-width: 44px !important;
+    top: 5px !important;
+    padding-inline: 12px !important;
   }
   .reason01-flow-text {
-    font-size: 8.5px !important;
+    font-size: 9.5px !important;
   }
   .reason01-right {
     width: 58% !important;
