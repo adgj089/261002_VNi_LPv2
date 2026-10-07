@@ -8,16 +8,14 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const publicDirectory = path.join(__dirname, 'public');
 const assetsDirectory = path.join(__dirname, 'assets');
 const indexFile = path.join(__dirname, 'index.html');
 
 if (!existsSync(indexFile)) {
-  console.error('Cannot start server: root index.html is missing. Run "npm run build" first.');
+  console.error('Cannot start server: root index.html is missing.');
   process.exit(1);
 }
 
-app.use('/public', express.static(publicDirectory));
 app.use('/assets', express.static(assetsDirectory));
 
 app.get('*', (req, res) => {
