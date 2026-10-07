@@ -3831,7 +3831,50 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
   }
 }
 </style>
-</head>
+
+    <style>
+      /* Desktop header layout stabilization: logo/actions protected, nav cells balanced */
+      @media (min-width: 1024px) {
+        header > div {
+          gap: 1rem;
+        }
+
+        header > div > div:first-child {
+          flex: 0 0 auto;
+          flex-wrap: nowrap;
+          white-space: nowrap;
+        }
+
+        header > div > div:first-child > span {
+          white-space: nowrap;
+        }
+
+        header nav {
+          flex: 1 1 auto;
+          min-width: 0;
+          justify-content: stretch;
+          gap: 0.75rem;
+        }
+
+        header nav > a {
+          flex: 1 1 0;
+          min-width: 0;
+          text-align: left;
+          line-height: 1.35;
+        }
+
+        header > div > div:last-child {
+          flex: 0 0 auto;
+          flex-wrap: nowrap;
+        }
+
+        .vn-i18n-desktop,
+        header > div > div:last-child > button.lg\\:block {
+          flex: 0 0 auto;
+        }
+      }
+    </style>
+  </head>
   <body>
     <div id="root"></div>
   <script id="vn-ai-chat-script">
