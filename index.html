@@ -3731,6 +3731,40 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
   }
 }
 </style>
+<style id="reason01-mobile-layout-fix">
+@media (max-width: 575px) {
+  .reason01-visual-row {
+    position: relative !important;
+    gap: 0 !important;
+  }
+  .reason01-flow {
+    position: absolute !important;
+    inset: 0 !important;
+    width: auto !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    transform: none !important;
+    z-index: 20 !important;
+    pointer-events: none !important;
+  }
+  .reason01-flow-label {
+    position: absolute !important;
+    left: 50% !important;
+    top: 4px !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+  .reason01-flow > div:last-child {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+  }
+}
+</style>
 <style id="reason01-desktop-layout-fix">
 .reason01-flow-desktop {
   display: none;
