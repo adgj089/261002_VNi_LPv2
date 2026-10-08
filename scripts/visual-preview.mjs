@@ -774,9 +774,30 @@ for (const profile of modalQaProfiles) {
   try {
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
-    const cta = page.getByRole('button', { name: /サンプルレポートを見る|View sample report/i }).first();
+    const cta = page.locator('.hero-fv-wrapper button').filter({ hasText: /サンプルレポートを見る|View sample report/i }).first();
     await cta.waitFor({ state: 'visible', timeout: 15000 });
-    await cta.click({ timeout: 10000 });
+    await cta.scrollIntoViewIfNeeded({ timeout: 10000 });
+    result.clickDiagnostics = await cta.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      const x = Math.max(0, Math.min(innerWidth - 1, rect.left + rect.width / 2));
+      const y = Math.max(0, Math.min(innerHeight - 1, rect.top + rect.height / 2));
+      const atPoint = document.elementFromPoint(x, y);
+      return {
+        selector: '.hero-fv-wrapper button',
+        label: el.textContent?.trim(),
+        rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+        viewport: { width: innerWidth, height: innerHeight },
+        hitTag: atPoint?.tagName || null,
+        hitClass: typeof atPoint?.className === 'string' ? atPoint.className.slice(0, 240) : null,
+        targetReceivesPointer: atPoint === el || el.contains(atPoint),
+      };
+    });
+    try {
+      await cta.click({ timeout: 10000 });
+    } catch (clickError) {
+      result.clickDiagnostics.clickError = String(clickError);
+      throw clickError;
+    }
     const dialog = page.locator('[role="dialog"][aria-modal="true"]');
     await dialog.waitFor({ state: 'visible', timeout: 10000 });
     await page.waitForTimeout(450);
