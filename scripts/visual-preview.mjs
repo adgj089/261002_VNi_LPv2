@@ -807,16 +807,21 @@ for (const profile of modalQaProfiles) {
       const closeButton = root?.querySelector('button[aria-label="閉じる"], button[aria-label="Close"]');
       const rect = panel?.getBoundingClientRect();
       const closeRect = closeButton?.getBoundingClientRect();
-      const scrollable = root ? [...root.querySelectorAll('*')].some(el => {
+      const scrollCandidates = root ? [...root.querySelectorAll('*')].filter(el => {
         const style = getComputedStyle(el);
-        return /(auto|scroll)/.test(style.overflowY) && el.scrollHeight > el.clientHeight + 2;
-      }) : false;
+        return /(auto|scroll)/.test(style.overflowY);
+      }) : [];
+      const scrollRequired = scrollCandidates.some(el => el.scrollHeight > el.clientHeight + 2);
+      const scrollAvailable = scrollCandidates.some(el =>
+        el.scrollHeight > el.clientHeight + 2 && el.clientHeight > 0
+      );
       return {
         actualWidth: innerWidth,
         bodyScrollLocked: document.body.classList.contains('overflow-hidden'),
         panelRect: rect ? { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } : null,
         closeRect: closeRect ? { left: closeRect.left, right: closeRect.right, top: closeRect.top, bottom: closeRect.bottom } : null,
-        internalScrollerFound: scrollable,
+        internalScrollRequired: scrollRequired,
+        internalScrollerFound: scrollAvailable,
       };
     });
     result.metrics = metrics;
@@ -826,7 +831,7 @@ for (const profile of modalQaProfiles) {
     result.checks.closeWithinViewport = withinWidth(metrics.closeRect) &&
       metrics.closeRect.top >= -1 && metrics.closeRect.bottom <= profile.height + 1;
     result.checks.backgroundLocked = metrics.bodyScrollLocked;
-    result.checks.internalScrollAvailable = metrics.internalScrollerFound;
+    result.checks.internalScrollAvailable = !metrics.internalScrollRequired || metrics.internalScrollerFound;
     await page.screenshot({
       path: path.join(outputDir, 'modal-' + profile.name + '.png'),
       fullPage: false, animations: 'disabled',
