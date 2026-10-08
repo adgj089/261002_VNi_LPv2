@@ -1164,6 +1164,177 @@ for (const profile of dashboardQaProfiles) {
 summary.dashboardQa = dashboardQaResults;
 await fs.writeFile(path.join(outputDir, 'dashboard-diagnostics.json'), JSON.stringify(dashboardQaResults, null, 2));
 
+
+// STEP 5-2-C-2: Dashboard detail QA (demo interactions, isolated from prior QA).
+const dashboardDetailProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const dashboardDetailResults = {};
+for (const profile of dashboardDetailProfiles) {
+  const result = { viewport: profile.width, status: 'NOT TESTED', groups: {}, errors: [], nonFileDemoActions: [] };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP',
+    isMobile: profile.width < 768, hasTouch: profile.width < 768,
+    permissions: ['clipboard-read', 'clipboard-write'],
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push(error.message));
+  const mockup = page.locator('.mockup-window').first();
+  const mainArea = mockup.locator('.mockup-main');
+  const content = mainArea.locator('.tab-content-anim');
+  const menu = mockup.locator(profile.width < 640 ? '.mobile-menu-scroll' : '.mockup-sidebar');
+  const activate = async name => {
+    const locator = menu.locator(profile.width < 640 ? 'button' : 'div.cursor-pointer').filter({ hasText: name }).first();
+    await locator.scrollIntoViewIfNeeded();
+    await locator.click({ timeout: 12000 });
+    await page.waitForTimeout(350);
+  };
+  const executeGroup = async (key, fn) => {
+    const group = { status: 'NOT TESTED', checks: {}, errors: [] };
+    result.groups[key] = group;
+    try {
+      await fn(group.checks);
+      group.status = Object.values(group.checks).every(Boolean) ? 'PASS' : 'FAIL';
+    } catch (error) {
+      group.errors.push(String(error));
+      group.status = 'FAIL';
+    }
+  };
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    await mockup.waitFor({ state: 'visible', timeout: 15000 });
+    await executeGroup('industryReports', async checks => {
+      await activate('業界レポート');
+      const search = content.locator('input[placeholder="業界・キーワードでレポートを検索..."]');
+      checks.searchExists = await search.isVisible();
+      await search.fill('___qa_no_such_report___');
+      checks.searchUpdates = await search.inputValue() === '___qa_no_such_report___';
+      await search.fill('');
+      const categoryButtons = content.locator('button').filter({ hasText: /^(すべて|全て|製造業|IT|不動産|小売|物流|金融|観光)$/ });
+      checks.categoryAvailable = await categoryButtons.count() > 0;
+      if (checks.categoryAvailable) {
+        const button = categoryButtons.last();
+        await button.click();
+        checks.categorySelected = await button.evaluate(el => el.classList.contains('bg-blue-600'));
+      } else checks.categorySelected = false;
+      const pdf = content.locator('button.btn-pdf-download').first();
+      checks.pdfButtonExists = await pdf.count() > 0;
+      if (checks.pdfButtonExists) {
+        await pdf.click();
+        checks.pdfToast = await page.locator('.toast').isVisible();
+      } else checks.pdfToast = false;
+      result.nonFileDemoActions.push('Industry PDF button: Toast only; physical download NOT TESTED');
+    });
+    await executeGroup('researchPlans', async checks => {
+      await activate('調査テーマ');
+      const task = content.locator('div.cursor-pointer').filter({ has: content.locator('div.rounded.border') }).first();
+      checks.taskFound = await task.count() > 0;
+      if (checks.taskFound) {
+        const indicator = task.locator('div.rounded.border').first();
+        const before = await indicator.getAttribute('class') || '';
+        await task.click();
+        const after = await indicator.getAttribute('class') || '';
+        checks.taskToggles = before !== after;
+        await task.click();
+        checks.taskRestores = (await indicator.getAttribute('class')) === before;
+      } else { checks.taskToggles = false; checks.taskRestores = false; }
+    });
+    await executeGroup('auditedData', async checks => {
+      await activate('照合データ');
+      const search = content.locator('input[placeholder="企業名・指標名・情報ソースで検索..."]');
+      checks.searchFound = await search.isVisible();
+      await search.fill('___qa_no_such_data___');
+      checks.searchUpdates = await search.inputValue() === '___qa_no_such_data___';
+      await search.fill('');
+      const categories = content.locator('button').filter({ hasText: /^(すべて|全て|財務|市場|企業|競合|経済|マクロ)$/ });
+      checks.categoryFound = await categories.count() > 0;
+      if (checks.categoryFound) {
+        const selected = categories.last();
+        await selected.click();
+        checks.categorySelect = await selected.evaluate(el => el.classList.contains('bg-blue-600'));
+      } else checks.categorySelect = false;
+      const csv = content.getByRole('button', { name: 'CSVエクスポート' });
+      checks.csvPresent = await csv.count() > 0;
+      if (checks.csvPresent) {
+        await csv.click();
+        checks.csvToast = await page.locator('.toast').isVisible();
+      } else checks.csvToast = false;
+      result.nonFileDemoActions.push('Audited CSV button: Toast only; physical download NOT TESTED');
+    });
+    await executeGroup('reportExport', async checks => {
+      await activate('レポート出力');
+      const period = content.getByRole('button', { name: '直近3ヶ月', exact: true });
+      await period.click();
+      checks.periodSelect = await period.evaluate(el => el.classList.contains('border-blue-500'));
+      const format = content.getByRole('button', { name: 'CSV', exact: true });
+      await format.click();
+      checks.formatSelect = await format.evaluate(el => el.classList.contains('border-blue-500'));
+      const boxes = content.locator('input[type="checkbox"]');
+      checks.checkboxesPresent = await boxes.count() === 4;
+      if (checks.checkboxesPresent) {
+        const previous = await boxes.first().isChecked();
+        await boxes.first().click();
+        checks.checkboxToggles = await boxes.first().isChecked() !== previous;
+      } else checks.checkboxToggles = false;
+      const history = content.getByText(/出力履歴: \d+件/).first();
+      const before = await history.innerText();
+      await content.getByRole('button', { name: /レポートを生成・出力/ }).click();
+      await page.waitForTimeout(1100);
+      const after = await history.innerText();
+      checks.historyIncreases = (Number(after.match(/\d+/)?.[0]) === Number(before.match(/\d+/)?.[0]) + 1);
+      const redownload = content.getByRole('button', { name: '再ダウンロード' }).first();
+      checks.redownloadExists = await redownload.count() > 0;
+      if (checks.redownloadExists) {
+        await redownload.click();
+        checks.redownloadToast = await page.locator('.toast').isVisible();
+      } else checks.redownloadToast = false;
+      result.nonFileDemoActions.push('Generated report history and re-download Toast: actual file NOT TESTED');
+    });
+    await executeGroup('settings', async checks => {
+      await activate('設定');
+      const toggles = content.locator('button[style*="width: 36px"]');
+      checks.threeToggles = await toggles.count() === 3;
+      if (checks.threeToggles) {
+        const before = await toggles.first().getAttribute('style');
+        await toggles.first().click();
+        checks.notificationChanges = before !== await toggles.first().getAttribute('style');
+      } else checks.notificationChanges = false;
+      const reveal = content.getByRole('button', { name: '表示', exact: true });
+      checks.apiTogglePresent = await reveal.count() > 0;
+      if (checks.apiTogglePresent) {
+        await reveal.click();
+        checks.apiCanHide = await content.getByRole('button', { name: '隠す', exact: true }).isVisible();
+        await content.getByRole('button', { name: '隠す', exact: true }).click();
+      } else checks.apiCanHide = false;
+      const language = content.locator('select');
+      await language.selectOption('en');
+      checks.languageState = await language.inputValue() === 'en';
+      await content.getByRole('button', { name: '設定を保存' }).click();
+      checks.saveToast = await page.locator('.toast').isVisible();
+      checks.copyButtonExists = await content.getByRole('button', { name: 'キーをコピー' }).count() > 0;
+      checks.regenerateExists = await content.getByRole('button', { name: '再生成' }).count() > 0;
+      result.nonFileDemoActions.push('Settings save persistence and API key regeneration: NOT TESTED');
+    });
+    result.status = Object.keys(result.groups).length === 5 &&
+      Object.values(result.groups).every(group => group.status === 'PASS') &&
+      result.errors.length === 0 ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'FAIL';
+  } finally {
+    dashboardDetailResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.dashboardDetailQa = dashboardDetailResults;
+await fs.writeFile(path.join(outputDir, 'dashboard-detail-diagnostics.json'), JSON.stringify(dashboardDetailResults, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
