@@ -853,6 +853,108 @@ for (const profile of modalQaProfiles) {
 summary.modalQa = modalQaResults;
 await fs.writeFile(path.join(outputDir, 'modal-diagnostics.json'), JSON.stringify(modalQaResults, null, 2));
 
+
+// STEP 5-2-A: Navigation functional QA. Isolated from existing modal QA.
+const navigationQaProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const navigationTargets = ['#why-choose-us', '#features', '#flow', '#comparison', '#faq'];
+const navigationQaResults = {};
+for (const profile of navigationQaProfiles) {
+  const result = { viewport: { width: profile.width, height: profile.height }, status: 'NOT TESTED', checks: {}, links: [], errors: [] };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP',
+    isMobile: profile.width < 768, hasTouch: profile.width < 768,
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push('pageerror: ' + error.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    const mobile = profile.width < 1024;
+    const header = page.locator('header').first();
+    const hamburger = page.locator('header button[aria-label="メニューを開閉"]');
+    const menu = page.locator('header .vn-mobile-nav-list');
+    const desktopNav = page.locator('header nav');
+    result.checks.actualViewport = await page.evaluate(width => innerWidth === width, profile.width);
+    result.checks.expectedNavigationMode = mobile
+      ? await hamburger.isVisible() && !(await desktopNav.isVisible())
+      : await desktopNav.isVisible() && !(await hamburger.isVisible());
+    if (mobile) {
+      await hamburger.click({ timeout: 10000 });
+      await page.waitForTimeout(380);
+      result.checks.mobileMenuOpens = await menu.isVisible() && await menu.locator('a[href="#faq"]').isVisible();
+      await page.screenshot({ path: path.join(outputDir, 'navigation-' + profile.name + '-menu-open.png'), fullPage: false, animations: 'disabled' });
+      await hamburger.click({ timeout: 10000 });
+      await page.waitForTimeout(380);
+      result.checks.mobileMenuCloses = await menu.locator('a[href="#faq"]').evaluate(el => getComputedStyle(el.parentElement.parentElement).pointerEvents === 'none').catch(() => false);
+      // Verify backdrop click closes an open mobile menu.
+      await hamburger.click({ timeout: 10000 });
+      await page.waitForTimeout(380);
+      await page.locator('header').evaluate(el => {
+        const overlay = el.previousElementSibling;
+        if (overlay && overlay.getBoundingClientRect().width) overlay.click();
+      });
+      await page.waitForTimeout(380);
+      result.checks.backdropClosesMenu = await menu.locator('a[href="#faq"]').evaluate(el => getComputedStyle(el.parentElement.parentElement).pointerEvents === 'none').catch(() => false);
+    }
+    for (const href of navigationTargets) {
+      const entry = { href, status: 'NOT TESTED' };
+      try {
+        const target = page.locator(href);
+        entry.targetExists = await target.count() === 1;
+        if (!entry.targetExists) throw Error('Missing or nonunique anchor: ' + href);
+        if (mobile) {
+          await hamburger.click({ timeout: 10000 });
+          await page.waitForTimeout(380);
+        }
+        const link = mobile ? menu.locator('a[href="' + href + '"]') : desktopNav.locator('a[href="' + href + '"]');
+        entry.linkVisible = await link.isVisible();
+        await link.click({ timeout: 10000 });
+        await page.waitForTimeout(1050);
+        entry.metrics = await page.evaluate(selector => {
+          const node = document.querySelector(selector);
+          const header = document.querySelector('header');
+          if (!node || !header) return null;
+          const targetRect = node.getBoundingClientRect();
+          const headerRect = header.getBoundingClientRect();
+          return { targetTop: Math.round(targetRect.top), headerBottom: Math.round(headerRect.bottom),
+            scrollY: Math.round(scrollY), targetVisible: targetRect.bottom > headerRect.bottom && targetRect.top < innerHeight,
+            headerOverlapsTargetTop: targetRect.top < headerRect.bottom - 2 };
+        }, href);
+        entry.scrollMoved = entry.metrics?.scrollY > 0;
+        entry.visibleBelowHeader = !!entry.metrics?.targetVisible && !entry.metrics?.headerOverlapsTargetTop;
+        if (mobile) {
+          entry.menuClosedAfterSelection = await menu.locator('a[href="#faq"]').evaluate(el =>
+            getComputedStyle(el.parentElement.parentElement).pointerEvents === 'none').catch(() => false);
+        }
+        entry.status = entry.linkVisible && entry.scrollMoved && entry.visibleBelowHeader &&
+          (!mobile || entry.menuClosedAfterSelection) ? 'PASS' : 'FAIL';
+      } catch (error) {
+        entry.errors = [String(error)];
+        entry.status = 'FAIL';
+      }
+      result.links.push(entry);
+      await page.evaluate(() => scrollTo(0, 0));
+      await page.waitForTimeout(450);
+    }
+    result.status = Object.values(result.checks).every(Boolean) &&
+      result.links.every(link => link.status === 'PASS') && result.errors.length === 0 ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error)); result.status = 'FAIL';
+  } finally {
+    navigationQaResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.navigationQa = navigationQaResults;
+await fs.writeFile(path.join(outputDir, 'navigation-diagnostics.json'), JSON.stringify(navigationQaResults, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
