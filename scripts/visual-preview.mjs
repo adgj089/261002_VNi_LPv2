@@ -747,6 +747,86 @@ for (const profile of step6Profiles) {
   await context.close();
 }
 
+
+// STEP 5-1-D: independent Sample Report Modal responsive QA.
+const modalQaProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const modalQaResults = {};
+for (const profile of modalQaProfiles) {
+  const result = {
+    viewport: { width: profile.width, height: profile.height },
+    status: 'NOT TESTED', checks: {}, errors: [],
+  };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1,
+    locale: 'ja-JP',
+    isMobile: profile.width < 768,
+    hasTouch: profile.width < 768,
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push(error.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    const cta = page.getByRole('button', { name: /サンプルレポートを見る|View sample report/i }).first();
+    await cta.waitFor({ state: 'visible', timeout: 15000 });
+    await cta.click({ timeout: 10000 });
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+    await dialog.waitFor({ state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(450);
+    const metrics = await page.evaluate(() => {
+      const root = document.querySelector('[role="dialog"][aria-modal="true"]');
+      const panel = root?.children[1];
+      const closeButton = root?.querySelector('button[aria-label="閉じる"], button[aria-label="Close"]');
+      const rect = panel?.getBoundingClientRect();
+      const closeRect = closeButton?.getBoundingClientRect();
+      const scrollable = root ? [...root.querySelectorAll('*')].some(el => {
+        const style = getComputedStyle(el);
+        return /(auto|scroll)/.test(style.overflowY) && el.scrollHeight > el.clientHeight + 2;
+      }) : false;
+      return {
+        actualWidth: innerWidth,
+        bodyScrollLocked: document.body.classList.contains('overflow-hidden'),
+        panelRect: rect ? { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } : null,
+        closeRect: closeRect ? { left: closeRect.left, right: closeRect.right, top: closeRect.top, bottom: closeRect.bottom } : null,
+        internalScrollerFound: scrollable,
+      };
+    });
+    result.metrics = metrics;
+    const withinWidth = rect => !!rect && rect.left >= -1 && rect.right <= profile.width + 1;
+    result.checks.actualViewport = metrics.actualWidth === profile.width;
+    result.checks.panelWithinViewport = withinWidth(metrics.panelRect);
+    result.checks.closeWithinViewport = withinWidth(metrics.closeRect) &&
+      metrics.closeRect.top >= -1 && metrics.closeRect.bottom <= profile.height + 1;
+    result.checks.backgroundLocked = metrics.bodyScrollLocked;
+    result.checks.internalScrollAvailable = metrics.internalScrollerFound;
+    await page.screenshot({
+      path: path.join(outputDir, 'modal-' + profile.name + '.png'),
+      fullPage: false, animations: 'disabled',
+    });
+    await dialog.locator('button[aria-label="閉じる"], button[aria-label="Close"]').first().click({ timeout: 10000 });
+    await dialog.waitFor({ state: 'hidden', timeout: 10000 });
+    await page.waitForTimeout(380);
+    result.checks.closeButtonWorks = true;
+    result.checks.backgroundRestored = await page.evaluate(() => !document.body.classList.contains('overflow-hidden'));
+    result.status = Object.values(result.checks).every(Boolean) && result.errors.length === 0 ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'FAIL';
+  } finally {
+    modalQaResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.modalQa = modalQaResults;
+await fs.writeFile(path.join(outputDir, 'modal-diagnostics.json'), JSON.stringify(modalQaResults, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
