@@ -878,9 +878,9 @@ for (const profile of navigationQaProfiles) {
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
     const mobile = profile.width < 1024;
     const header = page.locator('header').first();
-    const hamburger = page.locator('header button[aria-label="メニューを開閉"]');
-    const menu = page.locator('header .vn-mobile-nav-list');
-    const desktopNav = page.locator('header nav');
+    const hamburger = header.locator('button[aria-label="メニューを開閉"]');
+    const menu = header.locator('.vn-mobile-nav-list');
+    const desktopNav = header.locator('nav').first();
     result.checks.actualViewport = await page.evaluate(width => innerWidth === width, profile.width);
     result.checks.expectedNavigationMode = mobile
       ? await hamburger.isVisible() && !(await desktopNav.isVisible())
@@ -896,7 +896,7 @@ for (const profile of navigationQaProfiles) {
       // Verify backdrop click closes an open mobile menu.
       await hamburger.click({ timeout: 10000 });
       await page.waitForTimeout(380);
-      await page.locator('header').evaluate(el => {
+      await header.evaluate(el => {
         const overlay = el.previousElementSibling;
         if (overlay && overlay.getBoundingClientRect().width) overlay.click();
       });
@@ -919,16 +919,21 @@ for (const profile of navigationQaProfiles) {
         await page.waitForTimeout(1050);
         entry.metrics = await page.evaluate(selector => {
           const node = document.querySelector(selector);
-          const header = document.querySelector('header');
+          const header = document.querySelector('header.fixed.top-0') || document.querySelector('header');
           if (!node || !header) return null;
+          const heading = node.querySelector('h2, h1, h3');
+          const headingRect = heading?.getBoundingClientRect();
           const targetRect = node.getBoundingClientRect();
           const headerRect = header.getBoundingClientRect();
           return { targetTop: Math.round(targetRect.top), headerBottom: Math.round(headerRect.bottom),
             scrollY: Math.round(scrollY), targetVisible: targetRect.bottom > headerRect.bottom && targetRect.top < innerHeight,
+            headingFound: !!headingRect, headingTop: headingRect ? Math.round(headingRect.top) : null,
+            headingBottom: headingRect ? Math.round(headingRect.bottom) : null,
+            headingVisible: !!headingRect && headingRect.top >= headerRect.bottom - 2 && headingRect.bottom <= innerHeight,
             headerOverlapsTargetTop: targetRect.top < headerRect.bottom - 2 };
         }, href);
         entry.scrollMoved = entry.metrics?.scrollY > 0;
-        entry.visibleBelowHeader = !!entry.metrics?.targetVisible && !entry.metrics?.headerOverlapsTargetTop;
+        entry.visibleBelowHeader = !!entry.metrics?.targetVisible && !!entry.metrics?.headingVisible;
         if (mobile) {
           entry.menuClosedAfterSelection = await menu.locator('a[href="#faq"]').evaluate(el =>
             getComputedStyle(el.parentElement.parentElement).pointerEvents === 'none').catch(() => false);
