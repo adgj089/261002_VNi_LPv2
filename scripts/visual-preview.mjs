@@ -960,6 +960,101 @@ for (const profile of navigationQaProfiles) {
 summary.navigationQa = navigationQaResults;
 await fs.writeFile(path.join(outputDir, 'navigation-diagnostics.json'), JSON.stringify(navigationQaResults, null, 2));
 
+
+// STEP 5-2-B: isolated FAQ interaction and responsive QA.
+const faqQaProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const faqQaResults = {};
+for (const profile of faqQaProfiles) {
+  const result = { viewport: { width: profile.width, height: profile.height }, status: 'NOT TESTED', checks: {}, items: [], errors: [] };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP',
+    isMobile: profile.width < 768, hasTouch: profile.width < 768,
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push('pageerror: ' + error.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    const section = page.locator('#faq');
+    await section.waitFor({ state: 'visible', timeout: 15000 });
+    await section.scrollIntoViewIfNeeded();
+    const items = section.locator('.faq-item');
+    const count = await items.count();
+    result.checks.fiveItemsPresent = count === 5;
+    const readState = async (index) => items.nth(index).evaluate(el => {
+      const button = el.querySelector('button');
+      const panel = el.children[1];
+      const style = panel ? getComputedStyle(panel) : null;
+      const rect = panel?.getBoundingClientRect();
+      const heading = button?.innerText.trim().replace(/\s+/g, ' ') ?? '';
+      const expanded = !!style && style.gridTemplateRows !== '0px' &&
+        parseFloat(style.opacity) > 0.95 && !!rect && rect.height > 3;
+      return { heading, expanded, panelHeight: rect ? Math.round(rect.height) : null,
+        gridRows: style?.gridTemplateRows ?? null, opacity: style?.opacity ?? null,
+        horizontalOverflow: el.getBoundingClientRect().right > innerWidth + 1 ||
+          el.getBoundingClientRect().left < -1 };
+    });
+    const waitAnimation = () => page.waitForTimeout(450);
+    result.checks.initiallyClosed = true;
+    for (let i = 0; i < count; i++) {
+      const state = await readState(i);
+      if (state.expanded) result.checks.initiallyClosed = false;
+    }
+    for (let i = 0; i < count; i++) {
+      const itemResult = { index: i + 1, status: 'NOT TESTED' };
+      try {
+        await items.nth(i).locator('button').first().click({ timeout: 12000 });
+        await waitAnimation();
+        itemResult.open = await readState(i);
+        await items.nth(i).locator('button').first().click({ timeout: 12000 });
+        await waitAnimation();
+        itemResult.closed = await readState(i);
+        itemResult.status = itemResult.open.expanded && !itemResult.closed.expanded &&
+          !itemResult.open.horizontalOverflow && !itemResult.closed.horizontalOverflow ? 'PASS' : 'FAIL';
+      } catch (error) {
+        itemResult.errors = [String(error)];
+        itemResult.status = 'FAIL';
+      }
+      result.items.push(itemResult);
+    }
+    if (count >= 2) {
+      await items.nth(0).locator('button').first().click({ timeout: 12000 });
+      await items.nth(1).locator('button').first().click({ timeout: 12000 });
+      await waitAnimation();
+      const first = await readState(0), second = await readState(1);
+      result.checks.multipleCanRemainOpen = first.expanded && second.expanded;
+      await section.screenshot({ path: path.join(outputDir, 'faq-' + profile.name + '-two-open.png'), animations: 'disabled' });
+      await items.nth(0).locator('button').first().click({ timeout: 12000 });
+      await items.nth(1).locator('button').first().click({ timeout: 12000 });
+      await waitAnimation();
+      result.checks.multipleCanClose = !(await readState(0)).expanded && !(await readState(1)).expanded;
+    } else {
+      result.checks.multipleCanRemainOpen = false;
+      result.checks.multipleCanClose = false;
+    }
+    result.checks.noHorizontalPageOverflow = await page.evaluate(() =>
+      Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= innerWidth + 1);
+    result.status = Object.values(result.checks).every(Boolean) &&
+      result.items.length === 5 && result.items.every(item => item.status === 'PASS') &&
+      result.errors.length === 0 ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'FAIL';
+  } finally {
+    faqQaResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.faqQa = faqQaResults;
+await fs.writeFile(path.join(outputDir, 'faq-diagnostics.json'), JSON.stringify(faqQaResults, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
