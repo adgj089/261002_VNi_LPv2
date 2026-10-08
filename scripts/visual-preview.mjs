@@ -1335,6 +1335,144 @@ for (const profile of dashboardDetailProfiles) {
 summary.dashboardDetailQa = dashboardDetailResults;
 await fs.writeFile(path.join(outputDir, 'dashboard-detail-diagnostics.json'), JSON.stringify(dashboardDetailResults, null, 2));
 
+
+const aiChatQaProfiles = [
+  { name: 'ai-chat-desktop-1440', width: 1440, height: 900, isMobile: false },
+  { name: 'ai-chat-tablet-768', width: 768, height: 1024, isMobile: false },
+  { name: 'ai-chat-mobile-390', width: 390, height: 844, isMobile: true },
+  { name: 'ai-chat-mobile-320', width: 320, height: 844, isMobile: true },
+];
+
+const aiChatQaResults = {};
+
+for (const profile of aiChatQaProfiles) {
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1,
+    isMobile: profile.isMobile,
+    hasTouch: profile.isMobile,
+  });
+  const page = await context.newPage();
+  const consoleErrors = [];
+  const pageErrors = [];
+  const failedRequests = [];
+
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('requestfailed', (request) => {
+    failedRequests.push({
+      url: request.url(),
+      method: request.method(),
+      failure: request.failure()?.errorText || 'unknown',
+    });
+  });
+
+  const result = {
+    viewport: { width: profile.width, height: profile.height },
+    checks: {},
+    errors: [],
+    status: 'NOT TESTED',
+  };
+
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch {}
+    await page.waitForTimeout(1200);
+
+    const root = page.locator('.vn-ai-chat-root');
+    const launcher = root.locator('.vn-ai-chat-launcher');
+    const panel = root.locator('.vn-ai-chat-panel');
+    const closeButton = root.locator('.vn-ai-chat-close');
+    const input = root.locator('.vn-ai-chat-input');
+    const form = root.locator('.vn-ai-chat-form');
+    const suggestion = root.locator('.vn-ai-chat-suggestion').first();
+
+    result.checks.rootExists = await root.count() === 1;
+    result.checks.launcherVisible = await launcher.isVisible();
+    result.checks.initiallyClosed =
+      await launcher.getAttribute('aria-expanded') === 'false' &&
+      await panel.getAttribute('aria-hidden') === 'true';
+
+    await launcher.click();
+    await page.waitForTimeout(250);
+    result.checks.openState =
+      await launcher.getAttribute('aria-expanded') === 'true' &&
+      await panel.getAttribute('aria-hidden') === 'false' &&
+      await panel.isVisible();
+    result.checks.closeButtonFocused = await closeButton.evaluate((element) => element === document.activeElement);
+
+    await closeButton.click();
+    await page.waitForTimeout(250);
+    result.checks.closeState =
+      await launcher.getAttribute('aria-expanded') === 'false' &&
+      await panel.getAttribute('aria-hidden') === 'true';
+    result.checks.focusRestored = await launcher.evaluate((element) => element === document.activeElement);
+
+    await launcher.click();
+    await page.waitForTimeout(250);
+    const messages = root.locator('.vn-ai-chat-message');
+    const initialMessageCount = await messages.count();
+    await suggestion.click();
+    await page.waitForTimeout(1200);
+    result.checks.suggestionAnswer =
+      await messages.count() >= initialMessageCount + 2 &&
+      await root.locator('.vn-ai-chat-message-assistant').count() >= 2;
+
+    const beforeEmptySubmit = await messages.count();
+    await form.evaluate((element) => element.requestSubmit());
+    await page.waitForTimeout(100);
+    result.checks.emptySubmitIgnored = await messages.count() === beforeEmptySubmit;
+
+    await input.fill('QA自由入力テスト');
+    await form.evaluate((element) => element.requestSubmit());
+    result.checks.busyState =
+      await input.isDisabled().catch(() => false) &&
+      await root.locator('.vn-ai-chat-form').getAttribute('aria-busy') === 'true';
+    await page.waitForTimeout(1200);
+    result.checks.freeInputAnswer =
+      await root.locator('.vn-ai-chat-message-user').filter({ hasText: 'QA自由入力テスト' }).count() === 1 &&
+      await root.locator('.vn-ai-chat-message-assistant').count() >= 3;
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(250);
+    result.checks.escapeCloses = await panel.getAttribute('aria-hidden') === 'true';
+
+    const overflow = await page.evaluate(() => ({
+      scrollWidth: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0),
+      viewportWidth: window.innerWidth,
+    }));
+    result.checks.noHorizontalOverflow = overflow.scrollWidth <= overflow.viewportWidth + 1;
+    result.overflow = overflow;
+    result.consoleErrors = consoleErrors;
+    result.pageErrors = pageErrors;
+    result.failedRequests = failedRequests;
+    result.status =
+      Object.values(result.checks).every(Boolean) &&
+      consoleErrors.length === 0 &&
+      pageErrors.length === 0
+        ? 'PASS'
+        : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.consoleErrors = consoleErrors;
+    result.pageErrors = pageErrors;
+    result.failedRequests = failedRequests;
+    result.status = 'FAIL';
+  } finally {
+    aiChatQaResults[profile.name] = result;
+    await context.close();
+  }
+}
+
+summary.aiChatQa = aiChatQaResults;
+await fs.writeFile(
+  path.join(outputDir, 'ai-chat-diagnostics.json'),
+  JSON.stringify(aiChatQaResults, null, 2)
+);
+
 await browser.close();
 
 await fs.writeFile(
