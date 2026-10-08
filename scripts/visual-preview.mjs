@@ -1233,7 +1233,7 @@ for (const profile of dashboardDetailProfiles) {
     });
     await executeGroup('researchPlans', async checks => {
       await activate('調査テーマ');
-      const task = content.locator('div.cursor-pointer').filter({ has: content.locator('div.rounded.border') }).first();
+      const task = content.locator('div.cursor-pointer').filter({ hasText: 'マクロ経済指標の検証（GDP / 為替 / インフレ率）' }).first();
       checks.taskFound = await task.count() > 0;
       if (checks.taskFound) {
         const indicator = task.locator('div.rounded.border').first();
