@@ -2855,6 +2855,9 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   .vn-footer__mobile-legal p{margin:0}
   .vn-footer__copyright{font-size:12px}
 }
+@media(min-width:600px) and (max-width:767px){
+  .vn-footer__inner{width:calc(100% - 48px);max-width:none}
+}
 @media(min-width:768px){
   .vn-footer__desktop .vn-footer__nav-arrow{display:none}
   .vn-footer__desktop .vn-footer__bottom-legal{display:none}
@@ -2862,7 +2865,6 @@ You might need to use a local HTTP server (instead of file://): https://react.de
 @media(min-width:768px) and (max-width:1023px){
   .vn-footer{padding-top:36px}
   .vn-footer__demo-note{margin-top:36px;max-width:900px}
-  .vn-footer__demo-part3,.vn-footer__demo-part5{display:block}
   .vn-footer__inner{width:min(calc(100% - 48px),900px);margin-inline:auto}
   .vn-footer__grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:24px;row-gap:18px}
   .vn-footer__desktop-bottom{margin-top:24px;padding-top:14px}
