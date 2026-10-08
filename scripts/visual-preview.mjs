@@ -1429,7 +1429,7 @@ for (const profile of aiChatQaProfiles) {
     await input.fill('QA自由入力テスト');
     await form.evaluate((element) => element.requestSubmit());
     result.checks.busyState =
-      await input.isDisabled().catch(() => false) &&
+      await input.getAttribute('disabled') !== null &&
       await root.locator('.vn-ai-chat-form').getAttribute('aria-busy') === 'true';
     await page.waitForTimeout(1200);
     result.checks.freeInputAnswer =
