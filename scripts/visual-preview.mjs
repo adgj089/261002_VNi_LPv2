@@ -1055,6 +1055,120 @@ for (const profile of faqQaProfiles) {
 summary.faqQa = faqQaResults;
 await fs.writeFile(path.join(outputDir, 'faq-diagnostics.json'), JSON.stringify(faqQaResults, null, 2));
 
+
+// STEP 5-2-C-1: isolated Dashboard menu-switching functional QA.
+// This block only exercises the demo UI; report-export/settings functions are out of scope.
+const dashboardQaProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const dashboardQaMenus = [
+  { name: 'ダッシュボード', heading: 'ベトナム市場サマリー・ダッシュボード' },
+  { name: '業界レポート', heading: 'ベトナム主要業界レポート・市場動向' },
+  { name: '調査テーマ', heading: '進行中の市場調査プロジェクト・プラン管理' },
+  { name: '照合データ', heading: '現地情報と照合した 財務・市場データライブラリ' },
+  { name: 'レポート出力', heading: 'カスタムレポート生成・エクスポート' },
+  { name: '設定', heading: 'アカウント・システム設定' },
+];
+const dashboardQaResults = {};
+for (const profile of dashboardQaProfiles) {
+  const result = {
+    viewport: { width: profile.width, height: profile.height },
+    status: 'NOT TESTED', checks: {}, menus: [], errors: [],
+  };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP',
+    isMobile: profile.width < 768, hasTouch: profile.width < 768,
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push('pageerror: ' + error.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    const mockup = page.locator('.mockup-window').first();
+    await mockup.waitFor({ state: 'visible', timeout: 15000 });
+    await mockup.scrollIntoViewIfNeeded();
+    const useMobileMenu = profile.width < 640;
+    const menuContainer = mockup.locator(useMobileMenu ? '.mobile-menu-scroll' : '.mockup-sidebar');
+    const content = mockup.locator('.mockup-main .tab-content-anim');
+    result.checks.viewportMatches = await page.evaluate(width => innerWidth === width, profile.width);
+    result.checks.menuModeMatches = await menuContainer.isVisible();
+    result.checks.initialDashboard = await content.locator('h2')
+      .filter({ hasText: dashboardQaMenus[0].heading }).isVisible();
+    for (const menu of dashboardQaMenus) {
+      const entry = { name: menu.name, status: 'NOT TESTED', checks: {}, errors: [] };
+      try {
+        const target = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
+          .filter({ has: page.locator('span').getByText(menu.name, { exact: true }) }).first();
+        entry.checks.uniqueMenu = (await menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
+          .filter({ has: page.locator('span').getByText(menu.name, { exact: true }) }).count()) === 1;
+        if (!entry.checks.uniqueMenu) {
+          entry.status = 'FAIL';
+          entry.errors.push('Menu locator is not unique');
+          result.menus.push(entry);
+          continue;
+        }
+        await target.scrollIntoViewIfNeeded();
+        await target.click({ timeout: 12000 });
+        await page.waitForTimeout(420);
+        entry.checks.correctHeading = await content.locator('h2')
+          .filter({ hasText: menu.heading }).isVisible();
+        entry.checks.activeMenu = await target.evaluate((el, mobile) =>
+          mobile ? el.classList.contains('bg-blue-600') :
+            el.classList.contains('border-l-2'), useMobileMenu);
+        entry.checks.noViewportClipping = await mockup.evaluate(el => {
+          const rect = el.getBoundingClientRect();
+          return rect.left >= -1 && rect.right <= innerWidth + 1;
+        });
+        entry.checks.noPageHorizontalOverflow = await page.evaluate(() =>
+          Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= innerWidth + 1);
+        entry.status = Object.values(entry.checks).every(Boolean) ? 'PASS' : 'FAIL';
+      } catch (error) {
+        entry.errors.push(String(error));
+        entry.status = 'FAIL';
+      }
+      result.menus.push(entry);
+    }
+    const original = dashboardQaMenus[0];
+    result.checks.returnedToDashboard = result.menus[0]?.status === 'PASS' &&
+      await content.locator('h2').filter({ hasText: original.heading }).isVisible();
+    if (result.checks.returnedToDashboard) {
+      const otherMenu = dashboardQaMenus[1];
+      const other = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
+        .filter({ has: page.locator('span').getByText(otherMenu.name, { exact: true }) }).first();
+      await other.scrollIntoViewIfNeeded();
+      await other.click({ timeout: 12000 });
+      await page.waitForTimeout(350);
+      const first = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
+        .filter({ has: page.locator('span').getByText(original.name, { exact: true }) }).first();
+      await first.scrollIntoViewIfNeeded();
+      await first.click({ timeout: 12000 });
+      await page.waitForTimeout(350);
+      result.checks.returnedToDashboard = await content.locator('h2')
+        .filter({ hasText: original.heading }).isVisible();
+    }
+    result.status = Object.values(result.checks).every(Boolean) &&
+      result.menus.length === 6 && result.menus.every(menu => menu.status === 'PASS') &&
+      result.errors.length === 0 ? 'PASS' : 'FAIL';
+    await mockup.screenshot({
+      path: path.join(outputDir, 'dashboard-' + profile.name + '-returned.png'),
+      animations: 'disabled',
+    });
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'FAIL';
+  } finally {
+    dashboardQaResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.dashboardQa = dashboardQaResults;
+await fs.writeFile(path.join(outputDir, 'dashboard-diagnostics.json'), JSON.stringify(dashboardQaResults, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
