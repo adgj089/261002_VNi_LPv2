@@ -1103,9 +1103,9 @@ for (const profile of dashboardQaProfiles) {
       const entry = { name: menu.name, status: 'NOT TESTED', checks: {}, errors: [] };
       try {
         const target = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
-          .filter({ has: page.locator('span').getByText(menu.name, { exact: true }) }).first();
+          .filter({ hasText: menu.name }).first();
         entry.checks.uniqueMenu = (await menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
-          .filter({ has: page.locator('span').getByText(menu.name, { exact: true }) }).count()) === 1;
+          .filter({ hasText: menu.name }).count()) === 1;
         if (!entry.checks.uniqueMenu) {
           entry.status = 'FAIL';
           entry.errors.push('Menu locator is not unique');
@@ -1134,22 +1134,17 @@ for (const profile of dashboardQaProfiles) {
       result.menus.push(entry);
     }
     const original = dashboardQaMenus[0];
-    result.checks.returnedToDashboard = result.menus[0]?.status === 'PASS' &&
-      await content.locator('h2').filter({ hasText: original.heading }).isVisible();
-    if (result.checks.returnedToDashboard) {
-      const otherMenu = dashboardQaMenus[1];
-      const other = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
-        .filter({ has: page.locator('span').getByText(otherMenu.name, { exact: true }) }).first();
-      await other.scrollIntoViewIfNeeded();
-      await other.click({ timeout: 12000 });
-      await page.waitForTimeout(350);
-      const first = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
-        .filter({ has: page.locator('span').getByText(original.name, { exact: true }) }).first();
+    const first = menuContainer.locator(useMobileMenu ? 'button' : 'div.cursor-pointer')
+      .filter({ hasText: original.name }).first();
+    try {
       await first.scrollIntoViewIfNeeded();
       await first.click({ timeout: 12000 });
-      await page.waitForTimeout(350);
+      await page.waitForTimeout(420);
       result.checks.returnedToDashboard = await content.locator('h2')
         .filter({ hasText: original.heading }).isVisible();
+    } catch (error) {
+      result.errors.push('Return to dashboard: ' + String(error));
+      result.checks.returnedToDashboard = false;
     }
     result.status = Object.values(result.checks).every(Boolean) &&
       result.menus.length === 6 && result.menus.every(menu => menu.status === 'PASS') &&
