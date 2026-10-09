@@ -1519,6 +1519,117 @@ await fs.writeFile(
   JSON.stringify(aiChatQaResults, null, 2)
 );
 
+// STEP 6: isolated, read-only KPI clipping and AI Chat obstruction diagnostics.
+const step6KpiChatProfiles = [
+  { name: 'mobile-320', width: 320, height: 844 },
+  { name: 'mobile-390', width: 390, height: 844 },
+];
+const step6KpiChatResults = {};
+for (const profile of step6KpiChatProfiles) {
+  const result = { viewport: { width: profile.width, height: profile.height }, status: 'NOT TESTED', checks: {}, kpi: [], chat: {}, errors: [] };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP', isMobile: true, hasTouch: true,
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch {}
+    await page.waitForTimeout(1000);
+    const mockup = page.locator('.mockup-main .tab-content-anim').first();
+    await mockup.waitFor({ state: 'visible', timeout: 15000 });
+    result.checks.viewportMatches = await page.evaluate(width => innerWidth === width, profile.width);
+    const measured = await mockup.evaluate(el => {
+      const names = ['GDP成長率', '総人口', '消費者物価指数', 'FDI認可額'];
+      const grid = [...el.querySelectorAll('div.grid.grid-cols-4')]
+        .find(node => node.children.length === 4 && names.every(name => node.textContent.includes(name)));
+      if (!grid) return { found: false, items: [] };
+      const items = [...grid.children].map((card, index) => {
+        const label = card.querySelector('span');
+        const row = card.querySelector('div.whitespace-nowrap.overflow-hidden');
+        const parts = row ? [...row.querySelectorAll('span')] : [];
+        const bounds = row?.getBoundingClientRect();
+        const partRects = parts.map(part => part.getBoundingClientRect());
+        const clippedPart = !!bounds && partRects.some(rect => rect.left < bounds.left - 1 || rect.right > bounds.right + 1);
+        return {
+          index, label: label?.textContent?.trim() || null,
+          value: parts.map(part => part.textContent.trim()).join(' '),
+          cardWidth: card.getBoundingClientRect().width,
+          rowClientWidth: row?.clientWidth ?? null,
+          rowScrollWidth: row?.scrollWidth ?? null,
+          clippedValue: row ? row.scrollWidth > row.clientWidth + 1 || clippedPart : null,
+          clippedLabel: label ? label.scrollWidth > label.clientWidth + 1 : null,
+        };
+      });
+      return { found: true, items };
+    });
+    result.kpi = measured.items;
+    result.checks.kpiFound = measured.found && measured.items.length === 4;
+    result.checks.kpiNoClipping = result.checks.kpiFound &&
+      measured.items.every(item => item.clippedValue === false && item.clippedLabel === false);
+
+    // Inspect the launcher against visible interactive elements at several scroll positions.
+    result.chat.samples = [];
+    const heights = await page.evaluate(() => ({
+      documentHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight,
+    }));
+    const maxScroll = Math.max(0, heights.documentHeight - heights.viewportHeight);
+    const positions = [0, Math.round(maxScroll / 2), maxScroll];
+    for (const scrollY of [...new Set(positions)]) {
+      await page.evaluate(y => scrollTo(0, y), scrollY);
+      await page.waitForTimeout(180);
+      const sample = await page.evaluate(() => {
+        const launcher = document.querySelector('.vn-ai-chat-root .vn-ai-chat-launcher');
+        if (!launcher) return { found: false, overlaps: [] };
+        const lr = launcher.getBoundingClientRect();
+        const active = getComputedStyle(launcher).pointerEvents !== 'none' && lr.width > 0 && lr.height > 0;
+        const overlap = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const targets = [...document.querySelectorAll('button, a[href], input, select, textarea, [role="button"]')]
+          .filter(el => !el.closest('.vn-ai-chat-root') && el.getBoundingClientRect().width > 0 &&
+            el.getBoundingClientRect().height > 0 && overlap(el.getBoundingClientRect(), lr));
+        return {
+          found: true, active, launcherRect: { x: lr.x, y: lr.y, width: lr.width, height: lr.height },
+          overlaps: targets.map(el => {
+            const r = el.getBoundingClientRect();
+            const left = Math.max(r.left, lr.left), right = Math.min(r.right, lr.right);
+            const top = Math.max(r.top, lr.top), bottom = Math.min(r.bottom, lr.bottom);
+            const x = (left + right) / 2, y = (top + bottom) / 2;
+            const hit = document.elementFromPoint(x, y);
+            const centerHit = document.elementFromPoint(Math.max(0, Math.min(innerWidth - 1, r.left + r.width / 2)),
+              Math.max(0, Math.min(innerHeight - 1, r.top + r.height / 2)));
+            return {
+              label: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 90),
+              tag: el.tagName, overlapArea: Math.round((right - left) * (bottom - top)),
+              launcherOnTopAtOverlap: !!hit?.closest?.('.vn-ai-chat-root'),
+              centerTargetReachable: centerHit === el || el.contains(centerHit),
+            };
+          }),
+        };
+      });
+      result.chat.samples.push({ scrollY, ...sample });
+    }
+    result.checks.chatLauncherFound = result.chat.samples.every(sample => sample.found);
+    result.chat.potentialObstructions = result.chat.samples.flatMap(sample =>
+      sample.overlaps.filter(o => o.launcherOnTopAtOverlap && !o.centerTargetReachable)
+        .map(o => ({ scrollY: sample.scrollY, ...o })));
+    // This is a geometric risk check, not a proof of successful/failed clicking.
+    result.checks.noCenterPointObstruction = result.chat.potentialObstructions.length === 0;
+    result.status = Object.values(result.checks).every(Boolean) ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'NOT TESTED';
+  } finally {
+    step6KpiChatResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.step6KpiChatQa = step6KpiChatResults;
+await fs.writeFile(
+  path.join(outputDir, 'step6-kpi-chat-diagnostics.json'),
+  JSON.stringify(step6KpiChatResults, null, 2)
+);
+
 await browser.close();
 
 await fs.writeFile(
