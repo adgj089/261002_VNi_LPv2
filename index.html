@@ -746,7 +746,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                     children: [
                       s.jsxDEV("span", { children: "2022" }, void 0, !1),
                       s.jsxDEV("span", { className: "dashboard-year-optional", children: "2023" }, void 0, !1),
-                      s.jsxDEV("span", { children: "2024" }, void 0, !1),
+                      s.jsxDEV("span", { className: "dashboard-year-mid", children: "2024" }, void 0, !1),
                       s.jsxDEV("span", { className: "dashboard-year-optional", children: "2025" }, void 0, !1),
                       s.jsxDEV("span", { children: "2026" }, void 0, !1)
                     ]
@@ -3958,8 +3958,13 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
           padding-right: 1rem;
         }
       }
-      @media (max-width: 379px) {
+      @media (max-width: 399px) {
         .dashboard-year-optional { display: none; }
+      }
+      @media (max-width: 349px) {
+        .dashboard-year-mid { display: none; }
+      }
+      @media (max-width: 379px) {
         .dashboard-kpi-card { padding-left: 2px; padding-right: 2px; }
       }
     </style>
