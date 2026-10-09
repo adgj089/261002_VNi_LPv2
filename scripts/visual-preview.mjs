@@ -1738,7 +1738,10 @@ for (const profile of step71Profiles) {
 
       if (profile.isMobile) {
         const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
-        if (await hamburger.getAttribute('aria-expanded') === 'true') {
+        const mobileMenuOpen = await page.locator('header .vn-mobile-nav-list').first().evaluate(el =>
+          getComputedStyle(el.parentElement.parentElement).pointerEvents !== 'none'
+        ).catch(() => false);
+        if (mobileMenuOpen) {
           await hamburger.click({ timeout: 5000 });
           await page.waitForTimeout(250);
         }
