@@ -4170,10 +4170,9 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
     if (panelOpenFrame !== null) cancelAnimationFrame(panelOpenFrame);
     panelOpenFrame = requestAnimationFrame(() => {
       panelOpenFrame = null;
-      if (!isOpen || root.inert) return;
-      panel.classList.add('vn-ai-chat-panel-open');
-      closeButton.focus({ preventScroll: true });
+      if (isOpen) panel.classList.add('vn-ai-chat-panel-open');
     });
+    closeButton.focus();
   };
 
   const closePanel = (restoreFocus = true) => {
