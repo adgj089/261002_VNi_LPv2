@@ -1757,7 +1757,7 @@ for (const profile of step71Profiles) {
       });
 
       const bodyText = await page.locator('body').innerText();
-      const navText = await page.locator('header').innerText();
+      const navText = await page.locator('header.fixed.top-0').innerText();
       const heroText = await page.locator('.hero-fv-wrapper').innerText();
       const dashboardText = await page.locator('.mockup-main').first().innerText();
       const footerText = await page.locator('footer').innerText();
