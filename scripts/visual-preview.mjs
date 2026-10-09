@@ -1398,11 +1398,30 @@ for (const profile of aiChatQaProfiles) {
 
     await launcher.click();
     await page.waitForTimeout(250);
+    result.openDetails = {
+      launcherExpanded: await launcher.getAttribute('aria-expanded') === 'true',
+      panelAriaVisible: await panel.getAttribute('aria-hidden') === 'false',
+      panelVisible: await panel.isVisible(),
+      panelHidden: await panel.evaluate((element) => element.hidden),
+      panelInert: await panel.evaluate((element) => element.inert),
+    };
     result.checks.openState =
-      await launcher.getAttribute('aria-expanded') === 'true' &&
-      await panel.getAttribute('aria-hidden') === 'false' &&
-      await panel.isVisible();
+      result.openDetails.launcherExpanded &&
+      result.openDetails.panelAriaVisible &&
+      result.openDetails.panelVisible;
     result.checks.closeButtonFocused = await closeButton.evaluate((element) => element === document.activeElement);
+    result.focusDetails = await closeButton.evaluate((element) => {
+      const active = document.activeElement;
+      const chatPanel = element.closest('.vn-ai-chat-panel');
+      const style = chatPanel ? getComputedStyle(chatPanel) : null;
+      return {
+        activeTag: active?.tagName ?? null,
+        activeClass: active?.getAttribute('class') ?? null,
+        closeButtonFocused: active === element,
+        panelVisibility: style?.visibility ?? null,
+        panelOpacity: style?.opacity ?? null,
+      };
+    });
 
     await closeButton.click();
     await page.waitForTimeout(250);
@@ -1449,6 +1468,11 @@ for (const profile of aiChatQaProfiles) {
     result.consoleErrors = consoleErrors;
     result.pageErrors = pageErrors;
     result.failedRequests = failedRequests;
+    result.qaSummary = {
+      interactionPass: Object.values(result.checks).every(Boolean),
+      consoleErrorCount: consoleErrors.length,
+      pageErrorCount: pageErrors.length,
+    };
     result.status =
       Object.values(result.checks).every(Boolean) &&
       consoleErrors.length === 0 &&
