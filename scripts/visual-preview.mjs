@@ -1396,8 +1396,30 @@ for (const profile of aiChatQaProfiles) {
       await launcher.getAttribute('aria-expanded') === 'false' &&
       await panel.getAttribute('aria-hidden') === 'true';
 
+    const readPanelState = () => panel.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const active = document.activeElement;
+      const close = element.querySelector('.vn-ai-chat-close');
+      return {
+        openClass: element.classList.contains('vn-ai-chat-panel-open'),
+        hidden: element.hidden,
+        inert: element.inert,
+        rootInert: element.closest('.vn-ai-chat-root')?.inert ?? null,
+        visibility: style.visibility,
+        opacity: style.opacity,
+        display: style.display,
+        transitionProperty: style.transitionProperty,
+        transitionDuration: style.transitionDuration,
+        activeTag: active?.tagName ?? null,
+        activeClass: typeof active?.className === 'string' ? active.className : null,
+        closeFocused: active === close,
+      };
+    });
+    result.stateTimeline = { beforeOpen: await readPanelState() };
     await launcher.click();
+    result.stateTimeline.afterClick = await readPanelState();
     await page.waitForTimeout(250);
+    result.stateTimeline.after250ms = await readPanelState();
     result.openDetails = {
       launcherExpanded: await launcher.getAttribute('aria-expanded') === 'true',
       panelAriaVisible: await panel.getAttribute('aria-hidden') === 'false',
