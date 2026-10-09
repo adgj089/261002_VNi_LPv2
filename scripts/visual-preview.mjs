@@ -1630,6 +1630,253 @@ await fs.writeFile(
   JSON.stringify(step6KpiChatResults, null, 2)
 );
 
+// STEP 7-1: isolated JP / EN / ES critical-content and interaction QA.
+const step71Profiles = [
+  { name: 'desktop-1440', width: 1440, height: 900, isMobile: false },
+  { name: 'mobile-390', width: 390, height: 844, isMobile: true },
+];
+const step71Languages = {
+  ja: {
+    label: 'JP',
+    nav: '選ばれる理由',
+    heroTagline: 'ベトナム市場特化型・次世代海外リサーチプラットフォーム',
+    cta: 'サンプルレポートを見る',
+    dashboard: 'ベトナム市場サマリー・ダッシュボード',
+    modalTitle: '【デモ】ベトナム市場分析レポート サンプル',
+    modalAction: 'サンプルデータを確認する',
+    toast: 'サンプルデータを表示しました',
+    footerDisclaimer: '架空サービスのデモページです。',
+  },
+  en: {
+    label: 'EN',
+    nav: 'Why us',
+    heroTagline: 'Next-generation research platform built for the Vietnamese market',
+    cta: 'View sample report',
+    dashboard: 'Vietnam Market Summary Dashboard',
+    modalTitle: '[Demo] Vietnam Market Analysis — Sample Report',
+    modalAction: 'View all data with a free trial',
+    toast: 'Opening free trial registration',
+    footerDisclaimer: 'fictional service.',
+  },
+  es: {
+    label: 'ES',
+    nav: 'Por qué elegirnos',
+    heroTagline: 'Plataforma de investigación de nueva generación especializada en Vietnam',
+    cta: 'Ver informe de muestra',
+    dashboard: 'Panel resumen del mercado vietnamita',
+    modalTitle: '[Demo] Informe de muestra del mercado vietnamita',
+    modalAction: 'Ver todos los datos con una prueba gratis',
+    toast: 'Abriendo el registro de prueba gratuita',
+    footerDisclaimer: 'servicio ficticio.',
+  },
+};
+const step71Results = {};
+
+for (const profile of step71Profiles) {
+  for (const [language, expected] of Object.entries(step71Languages)) {
+    const key = `${profile.name}-${language}`;
+    const result = {
+      profile: { width: profile.width, height: profile.height },
+      language,
+      status: 'NOT TESTED',
+      checks: {},
+      importantText: {},
+      japaneseResiduals: [],
+      clippedText: [],
+      consoleErrors: [],
+      pageErrors: [],
+      failedRequests: [],
+      errors: [],
+    };
+    const context = await browser.newContext({
+      viewport: { width: profile.width, height: profile.height },
+      screen: { width: profile.width, height: profile.height },
+      deviceScaleFactor: 1,
+      locale: language === 'ja' ? 'ja-JP' : language === 'es' ? 'es-ES' : 'en-US',
+      isMobile: profile.isMobile,
+      hasTouch: profile.isMobile,
+    });
+
+    try {
+      const page = await context.newPage();
+      page.on('console', message => {
+        if (message.type() === 'error') result.consoleErrors.push(message.text());
+      });
+      page.on('pageerror', error => result.pageErrors.push(error.message));
+      page.on('requestfailed', request => result.failedRequests.push({
+        url: request.url(),
+        method: request.method(),
+        failure: request.failure()?.errorText || 'unknown',
+      }));
+
+      await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch {}
+      await page.waitForTimeout(1000);
+      result.checks.viewportMatches = await page.evaluate(width => innerWidth === width, profile.width);
+
+      if (profile.isMobile) {
+        const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
+        if (await hamburger.isVisible().catch(() => false)) {
+          await hamburger.click({ timeout: 5000 });
+          await page.waitForTimeout(250);
+        }
+      }
+
+      const switcher = page.locator('.vn-i18n-switcher:visible').first();
+      const trigger = switcher.locator('.vn-i18n-trigger');
+      result.checks.languageTriggerVisible = await trigger.isVisible().catch(() => false);
+      if (result.checks.languageTriggerVisible) {
+        await trigger.click({ timeout: 5000 });
+        const option = switcher.locator(`[data-language="${language}"]`);
+        await option.waitFor({ state: 'visible', timeout: 5000 });
+        await option.click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+      }
+
+      result.checks.languageSelected = await page.locator('html').getAttribute('data-language') === language;
+      result.checks.documentLanguageMatches = await page.locator('html').getAttribute('lang') === language;
+
+      if (profile.isMobile) {
+        const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
+        if (await hamburger.getAttribute('aria-expanded') === 'true') {
+          await hamburger.click({ timeout: 5000 });
+          await page.waitForTimeout(250);
+        }
+      }
+
+      // Trigger reveal animations before measuring content throughout the page.
+      await page.evaluate(async () => {
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        const step = Math.max(Math.floor(innerHeight * 0.85), 500);
+        for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+          scrollTo(0, y);
+          await wait(70);
+        }
+        scrollTo(0, 0);
+        await wait(250);
+      });
+
+      const bodyText = await page.locator('body').innerText();
+      const navText = await page.locator('header').innerText();
+      const heroText = await page.locator('.hero-fv-wrapper').innerText();
+      const dashboardText = await page.locator('.mockup-main').first().innerText();
+      const footerText = await page.locator('footer').innerText();
+      result.importantText = { nav: navText, hero: heroText, dashboard: dashboardText, footer: footerText };
+      result.checks.navTranslated = navText.includes(expected.nav);
+      result.checks.heroTaglineTranslated = heroText.includes(expected.heroTagline);
+      result.checks.ctaTranslated = bodyText.includes(expected.cta);
+      result.checks.dashboardTranslated = dashboardText.includes(expected.dashboard);
+      result.checks.footerDisclaimerTranslated = footerText.includes(expected.footerDisclaimer);
+
+      const overflow = await page.evaluate(() => ({
+        viewportWidth: innerWidth,
+        documentScrollWidth: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0),
+      }));
+      result.overflow = overflow;
+      result.checks.noHorizontalOverflow = overflow.documentScrollWidth <= overflow.viewportWidth + 1;
+
+      result.japaneseResiduals = await page.locator('header, .hero-fv-wrapper, .mockup-main, footer').evaluateAll((roots, selectedLanguage) => {
+        if (selectedLanguage === 'ja') return [];
+        const japanese = /[\u3040-\u30ff\u3400-\u9fff]/;
+        const values = [];
+        for (const root of roots) {
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            const text = node.nodeValue?.trim().replace(/\s+/g, ' ');
+            const parent = node.parentElement;
+            if (!text || !parent || !japanese.test(text) || parent.getClientRects().length === 0) continue;
+            const style = getComputedStyle(parent);
+            if (style.display === 'none' || style.visibility === 'hidden') continue;
+            values.push(text);
+          }
+        }
+        return [...new Set(values)].slice(0, 100);
+      }, language);
+      result.checks.noJapaneseResidualsInCriticalAreas = language === 'ja' || result.japaneseResiduals.length === 0;
+
+      result.clippedText = await page.locator('header, .hero-fv-wrapper, .mockup-main, footer').evaluateAll(roots => {
+        const candidates = roots.flatMap(root => [...root.querySelectorAll('h1, h2, h3, p, span, a, button')]);
+        return candidates.filter(element => {
+          const text = element.textContent?.trim().replace(/\s+/g, ' ');
+          if (!text || element.getClientRects().length === 0) return false;
+          const style = getComputedStyle(element);
+          const clipsX = ['hidden', 'clip'].includes(style.overflowX);
+          const clipsY = ['hidden', 'clip'].includes(style.overflowY) || style.webkitLineClamp !== 'none';
+          return (clipsX && element.scrollWidth > element.clientWidth + 1) ||
+            (clipsY && element.scrollHeight > element.clientHeight + 1);
+        }).map(element => ({
+          text: element.textContent.trim().replace(/\s+/g, ' ').slice(0, 160),
+          tag: element.tagName,
+          className: element.className,
+          clientWidth: element.clientWidth,
+          scrollWidth: element.scrollWidth,
+          clientHeight: element.clientHeight,
+          scrollHeight: element.scrollHeight,
+        })).slice(0, 100);
+      });
+      result.checks.noClippedCriticalText = result.clippedText.length === 0;
+
+      await page.screenshot({
+        path: path.join(outputDir, `step7-1-${key}-page.png`),
+        fullPage: true,
+        animations: 'disabled',
+      });
+
+      const heroCta = page.locator('.hero-fv-wrapper button').filter({ hasText: expected.cta }).first();
+      result.checks.heroCtaVisible = await heroCta.isVisible().catch(() => false);
+      if (result.checks.heroCtaVisible) await heroCta.click({ timeout: 5000 });
+      const dialog = page.locator('[role="dialog"][aria-modal="true"]');
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+      const dialogText = await dialog.innerText();
+      result.modalText = dialogText;
+      result.checks.modalOpened = true;
+      result.checks.modalTitleTranslated = dialogText.includes(expected.modalTitle);
+      result.checks.modalActionTranslated = dialogText.includes(expected.modalAction);
+      await page.screenshot({
+        path: path.join(outputDir, `step7-1-${key}-modal.png`),
+        fullPage: false,
+        animations: 'disabled',
+      });
+
+      const modalAction = dialog.getByRole('button', { name: expected.modalAction, exact: false });
+      await modalAction.click({ timeout: 5000 });
+      const toast = page.locator('.toast');
+      await toast.waitFor({ state: 'visible', timeout: 5000 });
+      result.toastText = await toast.innerText();
+      result.checks.toastTranslated = result.toastText.includes(expected.toast);
+      await page.screenshot({
+        path: path.join(outputDir, `step7-1-${key}-modal-toast.png`),
+        fullPage: false,
+        animations: 'disabled',
+      });
+
+      result.qaSummary = {
+        checkCount: Object.keys(result.checks).length,
+        passedCheckCount: Object.values(result.checks).filter(Boolean).length,
+        consoleErrorCount: result.consoleErrors.length,
+        pageErrorCount: result.pageErrors.length,
+        failedRequestCount: result.failedRequests.length,
+      };
+      result.status = Object.values(result.checks).every(Boolean) && result.pageErrors.length === 0
+        ? 'PASS'
+        : 'FAIL';
+    } catch (error) {
+      result.errors.push(String(error));
+      result.status = 'NOT TESTED';
+    } finally {
+      step71Results[key] = result;
+      await context.close();
+    }
+  }
+}
+
+summary.step71I18nQa = step71Results;
+await fs.writeFile(
+  path.join(outputDir, 'step7-1-i18n-diagnostics.json'),
+  JSON.stringify(step71Results, null, 2)
+);
+
 await browser.close();
 
 await fs.writeFile(
