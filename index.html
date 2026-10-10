@@ -4090,6 +4090,7 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
   let hidePanelTimer = null;
   let mobileShrinkTimer = null;
   let panelOpenFrame = null;
+  let focusRetryTimer = null;
   let mobileScrollListener = null;
   let isCleanedUp = false;
 
@@ -4178,17 +4179,24 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
     panel.inert = false;
     panel.setAttribute('aria-hidden', 'false');
     if (panelOpenFrame !== null) cancelAnimationFrame(panelOpenFrame);
+    clearScheduled(focusRetryTimer);
+    focusRetryTimer = null;
     panelOpenFrame = requestAnimationFrame(() => {
       panelOpenFrame = null;
       if (!isOpen || root.inert || panel.inert || panel.hidden) return;
       panel.classList.add('vn-ai-chat-panel-open');
-      panelOpenFrame = requestAnimationFrame(() => {
-        panelOpenFrame = null;
+      let attempts = 0;
+      const focusWhenVisible = () => {
+        focusRetryTimer = null;
         if (!isOpen || root.inert || panel.inert || panel.hidden) return;
+        if (document.activeElement !== launcher) return;
         if (getComputedStyle(panel).visibility === 'visible') {
           closeButton.focus({ preventScroll: true });
+          if (document.activeElement === closeButton) return;
         }
-      });
+        if (++attempts < 24) focusRetryTimer = schedule(focusWhenVisible, 50);
+      };
+      focusRetryTimer = schedule(focusWhenVisible, 50);
     });
   };
 
@@ -4203,6 +4211,8 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
       panelOpenFrame = null;
     }
     panel.classList.remove('vn-ai-chat-panel-open');
+    clearScheduled(focusRetryTimer);
+    focusRetryTimer = null;
     clearScheduled(hidePanelTimer);
     hidePanelTimer = schedule(() => {
       panel.hidden = true;
