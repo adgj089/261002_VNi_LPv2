@@ -1418,8 +1418,37 @@ for (const profile of aiChatQaProfiles) {
     result.stateTimeline = { beforeOpen: await readPanelState() };
     await launcher.click();
     result.stateTimeline.afterClick = await readPanelState();
-    await page.waitForTimeout(250);
-    result.stateTimeline.after250ms = await readPanelState();
+    const openWaitStartedAt = Date.now();
+    let openWaitTimedOut = false;
+    try {
+      await page.waitForFunction(() => {
+        const root = document.querySelector('.vn-ai-chat-root');
+        const launcher = root?.querySelector('.vn-ai-chat-launcher');
+        const panel = root?.querySelector('.vn-ai-chat-panel');
+        const close = panel?.querySelector('.vn-ai-chat-close');
+        if (!launcher || !panel || !close) return false;
+        const style = getComputedStyle(panel);
+        const bounds = panel.getBoundingClientRect();
+        return launcher.getAttribute('aria-expanded') === 'true' &&
+          panel.getAttribute('aria-hidden') === 'false' &&
+          !panel.hidden &&
+          !panel.inert &&
+          style.visibility === 'visible' &&
+          style.display !== 'none' &&
+          bounds.width > 0 &&
+          bounds.height > 0 &&
+          document.activeElement === close;
+      }, undefined, { polling: 50, timeout: 2000 });
+    } catch (error) {
+      if (error.name !== 'TimeoutError') throw error;
+      openWaitTimedOut = true;
+    }
+    result.openWait = {
+      elapsedMs: Date.now() - openWaitStartedAt,
+      timedOut: openWaitTimedOut,
+      timeoutMs: 2000,
+    };
+    result.stateTimeline.afterOpenWait = await readPanelState();
     result.openDetails = {
       launcherExpanded: await launcher.getAttribute('aria-expanded') === 'true',
       panelAriaVisible: await panel.getAttribute('aria-hidden') === 'false',
@@ -1428,10 +1457,12 @@ for (const profile of aiChatQaProfiles) {
       panelInert: await panel.evaluate((element) => element.inert),
     };
     result.checks.openState =
+      !openWaitTimedOut &&
       result.openDetails.launcherExpanded &&
       result.openDetails.panelAriaVisible &&
       result.openDetails.panelVisible;
-    result.checks.closeButtonFocused = await closeButton.evaluate((element) => element === document.activeElement);
+    result.checks.closeButtonFocused = !openWaitTimedOut &&
+      await closeButton.evaluate((element) => element === document.activeElement);
     result.focusDetails = await closeButton.evaluate((element) => {
       const active = document.activeElement;
       const chatPanel = element.closest('.vn-ai-chat-panel');
