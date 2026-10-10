@@ -2244,7 +2244,7 @@ for (const profile of step73Profiles) {
       };
       await captureToast(content.locator('button').filter({ hasText: /再ダウンロード|Download again|Tải lại|重新下载|재다운로드|Volver a descargar|Télécharger à nouveau/ }).first(), 'redownloadTranslated', expected.redownload);
       // Dynamic report-generation toast uses the currently selected export format.
-      const generate = content.locator('button').filter({ hasText: /レポートを生成・出力|Generate|Xuất|生成|생성|Generar|Générer/ }).last();
+      const generate = content.locator('button').filter({ hasText: /レポートを生成・出力|Generate|xuất|生成|생성|Generar|Générer/ }).last();
       if (await generate.count()) {
         await generate.click();
         await page.waitForTimeout(850);
