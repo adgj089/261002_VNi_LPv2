@@ -4180,9 +4180,16 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
     if (panelOpenFrame !== null) cancelAnimationFrame(panelOpenFrame);
     panelOpenFrame = requestAnimationFrame(() => {
       panelOpenFrame = null;
-      if (isOpen) panel.classList.add('vn-ai-chat-panel-open');
+      if (!isOpen || root.inert || panel.inert || panel.hidden) return;
+      panel.classList.add('vn-ai-chat-panel-open');
+      panelOpenFrame = requestAnimationFrame(() => {
+        panelOpenFrame = null;
+        if (!isOpen || root.inert || panel.inert || panel.hidden) return;
+        if (getComputedStyle(panel).visibility === 'visible') {
+          closeButton.focus({ preventScroll: true });
+        }
+      });
     });
-    closeButton.focus();
   };
 
   const closePanel = (restoreFocus = true) => {
