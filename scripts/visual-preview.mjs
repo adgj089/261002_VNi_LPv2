@@ -2142,6 +2142,147 @@ await fs.writeFile(
   JSON.stringify(step72Results, null, 2)
 );
 
+
+// STEP 7-3: dynamic-count and dynamic-toast QA. Keep prior QA suites unchanged.
+const step73Results = {};
+const step73Profiles = [
+  { name: 'desktop-1440', width: 1440, height: 900, isMobile: false },
+  { name: 'mobile-390', width: 390, height: 844, isMobile: true },
+];
+const step73Labels = {
+  ja: { progress: '完了', reports: '件表示中', verified: '全データ382件中', history: '出力履歴:', generated: '出力が完了しました', download: 'ダウンロードを開始しました', redownload: '再ダウンロードしました' },
+  en: { progress: 'complete', reports: 'items shown', verified: 'records', history: 'Export history:', generated: 'export completed', download: 'Started downloading', redownload: 'downloaded again' },
+  vi: { progress: 'Hoàn tất', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'Đã xuất xong', download: 'Đã bắt đầu tải xuống', redownload: 'Đã tải lại' },
+  zh: { progress: '已完成', reports: '显示', verified: '条', history: '导出历史：', generated: '导出完成', download: '已开始下载', redownload: '已重新下载' },
+  ko: { progress: '완료', reports: '건 표시 중', verified: '전체', history: '출력 이력:', generated: '내보내기가 완료되었습니다', download: '다운로드를 시작했습니다', redownload: '재다운로드 완료' },
+  es: { progress: 'completadas', reports: 'elementos mostrados', verified: 'Mostrando', history: 'Historial de exportación:', generated: 'exportado correctamente', download: 'Se inició la descarga', redownload: 'descargado de nuevo' },
+  fr: { progress: 'terminées', reports: 'éléments affichés', verified: 'Affichage', history: 'Historique des exports :', generated: 'exporté avec succès', download: 'Téléchargement de', redownload: 'téléchargé à nouveau' },
+};
+for (const profile of step73Profiles) {
+  for (const [language, expected] of Object.entries(step73Labels)) {
+    const key = profile.name + '-' + language;
+    const result = { language, profile: { width: profile.width, height: profile.height },
+      status: 'NOT TESTED', checks: {}, observations: {}, errors: [], pageErrors: [], failedRequests: [], consoleErrors: [] };
+    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height },
+      deviceScaleFactor: 1, isMobile: profile.isMobile, hasTouch: profile.isMobile, locale: 'ja-JP' });
+    try {
+      const page = await context.newPage();
+      page.on('pageerror', e => result.pageErrors.push(e.message));
+      page.on('requestfailed', r => result.failedRequests.push(r.url()));
+      page.on('console', m => { if (m.type() === 'error') result.consoleErrors.push(m.text()); });
+      await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.locator('.mockup-window').first().waitFor({ state: 'visible', timeout: 20000 });
+      const mockup = page.locator('.mockup-window').first();
+      const content = mockup.locator('.mockup-main .tab-content-anim');
+      const menu = mockup.locator(profile.isMobile ? '.mobile-menu-scroll' : '.mockup-sidebar');
+      const entries = profile.isMobile ? 'button' : 'div.cursor-pointer';
+      const activate = async (text) => {
+        const item = menu.locator(entries).filter({ hasText: text }).first();
+        await item.scrollIntoViewIfNeeded();
+        await item.click({ timeout: 10000 });
+        await page.waitForTimeout(220);
+      };
+      const switchLanguage = async () => {
+        if (language === 'ja') return;
+        if (profile.isMobile) {
+          const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
+          if (await hamburger.isVisible().catch(() => false)) await hamburger.click();
+        }
+        const switcher = page.locator('.vn-i18n-switcher:visible').first();
+        await switcher.locator('.vn-i18n-trigger').click();
+        await switcher.locator('[data-language="' + language + '"]').click();
+        await page.waitForTimeout(450);
+        if (profile.isMobile) {
+          const hamburger = page.locator('header button[aria-label]:not(.vn-i18n-trigger)').first();
+          const open = await page.locator('header .vn-mobile-nav-list').first().evaluate(el => getComputedStyle(el.parentElement.parentElement).pointerEvents !== 'none').catch(() => false);
+          if (open) await hamburger.click();
+        }
+      };
+      // Perform state-changing operations in Japanese; then validate localization of retained dynamic state.
+      await activate('調査テーマ');
+      const taskRows = content.locator('div.cursor-pointer').filter({ has: page.locator('.line-through') });
+      const beforeProgress = await content.innerText();
+      const unchecked = content.locator('div.cursor-pointer').filter({ hasText: '許認可リスク' }).first();
+      await unchecked.click();
+      const afterProgress = await content.innerText();
+      result.observations.progress = { before: (beforeProgress.match(/\d+ \/ \d+ 完了/) || [])[0], after: (afterProgress.match(/\d+ \/ \d+ 完了/) || [])[0] };
+      result.checks.progressChanged = result.observations.progress.before === '3 / 5 完了' && result.observations.progress.after === '4 / 5 完了';
+
+      await activate('業界レポート');
+      const industrySearch = content.locator('input[placeholder="業界・キーワードでレポートを検索..."]');
+      result.observations.reportBefore = (await content.innerText()).match(/\d+件表示中/)?.[0] || '';
+      await industrySearch.fill('___step73_unmatched___');
+      result.observations.reportAfter = (await content.innerText()).match(/\d+件表示中/)?.[0] || '';
+      result.checks.reportsChanged = result.observations.reportBefore === '6件表示中' && result.observations.reportAfter === '0件表示中';
+      await industrySearch.fill('');
+
+      await activate('照合データ');
+      result.observations.verifiedBefore = (await content.innerText()).match(/全データ382件中 \d+件を表示/)?.[0] || '';
+      await content.locator('input[placeholder="企業名・指標名・情報ソースで検索..."]').fill('___step73_unmatched___');
+      result.observations.verifiedAfter = (await content.innerText()).match(/全データ382件中 \d+件を表示/)?.[0] || '';
+      result.checks.verifiedChanged = result.observations.verifiedBefore === '全データ382件中 6件を表示' && result.observations.verifiedAfter === '全データ382件中 0件を表示';
+
+      await activate('レポート出力');
+      result.observations.historyBefore = (await content.innerText()).match(/出力履歴: \d+件/)?.[0] || '';
+      await content.getByRole('button', { name: /レポートを生成・出力/ }).click();
+      await page.waitForTimeout(850);
+      result.observations.historyAfter = (await content.innerText()).match(/出力履歴: \d+件/)?.[0] || '';
+      result.checks.historyChanged = result.observations.historyBefore === '出力履歴: 3件' && result.observations.historyAfter === '出力履歴: 4件';
+
+      await switchLanguage();
+      result.checks.languageSelected = await page.locator('html').getAttribute('data-language') === language;
+      const getTranslated = async () => (await content.innerText()).replace(/\s+/g, ' ');
+      const history = await getTranslated();
+      result.checks.historyTranslated = history.includes(expected.history) && history.includes('4');
+      const toast = page.locator('.toast');
+      const captureToast = async (selector, keyName, required) => {
+        await selector.click();
+        await toast.waitFor({ state: 'visible', timeout: 8000 });
+        const value = (await toast.innerText()).replace(/\s+/g, ' ');
+        result.observations[keyName] = value;
+        result.checks[keyName] = value.includes(required);
+      };
+      await captureToast(content.locator('button').filter({ hasText: /再ダウンロード|Re-download|Tải lại|重新下载|재다운로드|Volver a descargar|Télécharger à nouveau/ }).first(), 'redownloadTranslated', expected.redownload);
+      // Dynamic report-generation toast uses the currently selected export format.
+      const generate = content.locator('button').filter({ hasText: /レポートを生成・出力|Generate|Xuất|生成|생성|Generar|Générer/ }).last();
+      if (await generate.count()) {
+        await generate.click();
+        await page.waitForTimeout(850);
+        const message = (await toast.innerText()).replace(/\s+/g, ' ');
+        result.observations.generatedToast = message;
+        result.checks.generatedTranslated = message.includes(expected.generated);
+      } else result.checks.generatedTranslated = false;
+      await activate(expected.history === '出力履歴:' ? '業界レポート' : ( { en:'Industry reports', vi:'Báo cáo ngành', zh:'行业报告', ko:'산업 보고서', es:'Informes sectoriales', fr:'Rapports sectoriels' }[language] ));
+      await captureToast(content.locator('button.btn-pdf-download').first(), 'downloadTranslated', expected.download);
+      // Verify translated counts after switching back to pages with state.
+      const labels = { ja:['調査テーマ','業界レポート','照合データ'],en:['Research plan','Industry reports','Verified data'],vi:['Gói nghiên cứu','Báo cáo ngành','Dữ liệu đối chiếu'],zh:['调研方案','行业报告','核验数据'],ko:['조사 플랜','산업 보고서','검증 데이터'],es:['Plan de investigación','Informes sectoriales','Datos verificados'],fr:['Plan de recherche','Rapports sectoriels','Données vérifiées'] };
+      await activate(labels[language][0]);
+      const ptext = await getTranslated();
+      result.checks.progressTranslated = ptext.includes(expected.progress) && ptext.includes('4') && ptext.includes('5');
+      await activate(labels[language][1]);
+      await content.locator('input[type="text"]').first().fill('___step73_unmatched___');
+      const rtext = await getTranslated();
+      result.checks.reportsTranslated = rtext.includes(expected.reports) && rtext.includes('0');
+      await activate(labels[language][2]);
+      await content.locator('input[type="text"]').first().fill('___step73_unmatched___');
+      const vtext = await getTranslated();
+      result.checks.verifiedTranslated = vtext.includes(expected.verified) && vtext.includes('382') && vtext.includes('0');
+      result.checks.noHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+      result.checks.noPageErrors = result.pageErrors.length === 0;
+      await page.screenshot({ path: path.join(outputDir, 'step7-3-' + key + '-dynamic.png'), fullPage: true, animations: 'disabled' });
+      result.status = Object.values(result.checks).every(Boolean) ? 'PASS' : 'FAIL';
+    } catch (error) {
+      result.errors.push(String(error));
+      result.status = 'NOT TESTED';
+    } finally {
+      step73Results[key] = result;
+      await context.close();
+    }
+  }
+}
+summary.step73DynamicQa = step73Results;
+await fs.writeFile(path.join(outputDir, 'step7-3-dynamic-diagnostics.json'), JSON.stringify(step73Results, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
