@@ -2242,7 +2242,7 @@ for (const profile of step73Profiles) {
         result.observations[keyName] = value;
         result.checks[keyName] = value.includes(required);
       };
-      await captureToast(content.locator('button').filter({ hasText: /再ダウンロード|Re-download|Tải lại|重新下载|재다운로드|Volver a descargar|Télécharger à nouveau/ }).first(), 'redownloadTranslated', expected.redownload);
+      await captureToast(content.locator('button').filter({ hasText: /再ダウンロード|Download again|Tải lại|重新下载|재다운로드|Volver a descargar|Télécharger à nouveau/ }).first(), 'redownloadTranslated', expected.redownload);
       // Dynamic report-generation toast uses the currently selected export format.
       const generate = content.locator('button').filter({ hasText: /レポートを生成・出力|Generate|Xuất|生成|생성|Generar|Générer/ }).last();
       if (await generate.count()) {
