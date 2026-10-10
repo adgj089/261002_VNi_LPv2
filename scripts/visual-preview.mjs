@@ -1415,11 +1415,41 @@ for (const profile of aiChatQaProfiles) {
         closeFocused: active === close,
       };
     });
+    // STEP 6 diagnostic only: trace attempted focus calls and rendered states.
+    await page.evaluate(() => {
+      window.__vnFocusTrace = [];
+      const originalFocus = HTMLElement.prototype.focus;
+      HTMLElement.prototype.focus = function (...args) {
+        if (this.matches?.('.vn-ai-chat-close')) {
+          const panel = this.closest('.vn-ai-chat-panel');
+          window.__vnFocusTrace.push({
+            elapsedMs: Math.round(performance.now()),
+            action: 'focus-attempt',
+            visibility: panel ? getComputedStyle(panel).visibility : null,
+            openClass: panel?.classList.contains('vn-ai-chat-panel-open') ?? null,
+          });
+        }
+        const outcome = originalFocus.apply(this, args);
+        if (this.matches?.('.vn-ai-chat-close')) {
+          window.__vnFocusTrace.push({
+            elapsedMs: Math.round(performance.now()),
+            action: 'focus-result',
+            focused: document.activeElement === this,
+          });
+        }
+        return outcome;
+      };
+    });
     result.stateTimeline = { beforeOpen: await readPanelState() };
     await launcher.click();
     result.stateTimeline.afterClick = await readPanelState();
-    await page.waitForTimeout(250);
-    result.stateTimeline.after250ms = await readPanelState();
+    for (const delay of [50, 120, 250, 500, 1000]) {
+      await page.waitForTimeout(delay - (result.lastSampleMs ?? 0));
+      result.stateTimeline['after' + delay + 'ms'] = await readPanelState();
+      result.lastSampleMs = delay;
+    }
+    delete result.lastSampleMs;
+    result.focusAttemptTrace = await page.evaluate(() => window.__vnFocusTrace ?? []);
     result.openDetails = {
       launcherExpanded: await launcher.getAttribute('aria-expanded') === 'true',
       panelAriaVisible: await panel.getAttribute('aria-hidden') === 'false',
