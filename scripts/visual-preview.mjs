@@ -1259,7 +1259,7 @@ for (const profile of dashboardDetailProfiles) {
         await selected.click();
         checks.categorySelect = await selected.evaluate(el => el.classList.contains('bg-blue-600'));
       } else checks.categorySelect = false;
-      const csv = content.getByRole('button', { name: 'CSVエクスポート' });
+      const csv = content.getByRole('button', { name: 'CSVデモを確認' });
       checks.csvPresent = await csv.count() > 0;
       if (checks.csvPresent) {
         await csv.click();
@@ -1284,11 +1284,11 @@ for (const profile of dashboardDetailProfiles) {
       } else checks.checkboxToggles = false;
       const history = content.getByText(/出力履歴: \d+件/).first();
       const before = await history.innerText();
-      await content.getByRole('button', { name: /レポートを生成・出力/ }).click();
+      await content.getByRole('button', { name: /出力デモを実行/ }).click();
       await page.waitForTimeout(1100);
       const after = await history.innerText();
       checks.historyIncreases = (Number(after.match(/\d+/)?.[0]) === Number(before.match(/\d+/)?.[0]) + 1);
-      const redownload = content.getByRole('button', { name: '再ダウンロード' }).first();
+      const redownload = content.getByRole('button', { name: '履歴デモを見る' }).first();
       checks.redownloadExists = await redownload.count() > 0;
       if (checks.redownloadExists) {
         await redownload.click();
@@ -2189,13 +2189,13 @@ const step73Profiles = [
   { name: 'mobile-390', width: 390, height: 844, isMobile: true },
 ];
 const step73Labels = {
-  ja: { progress: '完了', reports: '件表示中', verified: '全データ382件中', history: '出力履歴:', generated: '出力が完了しました', download: 'ダウンロードを開始しました', redownload: '再ダウンロードしました' },
-  en: { progress: 'complete', reports: 'items shown', verified: 'records', history: 'Export history:', generated: 'export completed', download: 'Started downloading', redownload: 'downloaded again' },
-  vi: { progress: 'Hoàn tất', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'Đã xuất xong', download: 'Đã bắt đầu tải xuống', redownload: 'Đã tải lại' },
-  zh: { progress: '已完成', reports: '显示', verified: '条', history: '导出历史：', generated: '导出完成', download: '已开始下载', redownload: '已重新下载' },
-  ko: { progress: '완료', reports: '건 표시 중', verified: '전체', history: '출력 이력:', generated: '내보내기가 완료되었습니다', download: '다운로드를 시작했습니다', redownload: '재다운로드 완료' },
-  es: { progress: 'completadas', reports: 'elementos mostrados', verified: 'Mostrando', history: 'Historial de exportación:', generated: 'exportado correctamente', download: 'Se inició la descarga', redownload: 'descargado de nuevo' },
-  fr: { progress: 'terminées', reports: 'éléments affichés', verified: 'Affichage', history: 'Historique des exports :', generated: 'exporté avec succès', download: 'Téléchargement de', redownload: 'téléchargé à nouveau' },
+  ja: { progress: '完了', reports: '件表示中', verified: '全データ382件中', history: '出力履歴:', generated: 'サンプル出力履歴を追加しました。実ファイルは生成されません。', download: 'PDF表示デモです。ファイルはダウンロードされません。', redownload: '履歴デモです。実ファイルはありません。' },
+  en: { progress: 'complete', reports: 'items shown', verified: 'records', history: 'Export history:', generated: 'export history added. No file was generated.', download: 'PDF demo for', redownload: 'History demo for' },
+  vi: { progress: 'Hoàn tất', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'lịch sử xuất', download: 'Demo PDF cho', redownload: 'Demo lịch sử cho' },
+  zh: { progress: '已完成', reports: '显示', verified: '条', history: '导出历史：', generated: '示例导出记录，未生成实际文件。', download: 'PDF演示，未下载实际文件。', redownload: '历史记录演示，不存在实际文件。' },
+  ko: { progress: '완료', reports: '건 표시 중', verified: '전체', history: '출력 이력:', generated: '샘플 내보내기 기록이 추가되었습니다. 실제 파일은 생성되지 않습니다.', download: 'PDF 데모입니다. 실제 파일은 다운로드되지 않습니다.', redownload: '기록 데모입니다. 실제 파일은 없습니다.' },
+  es: { progress: 'completadas', reports: 'elementos mostrados', verified: 'Mostrando', history: 'Historial de exportación:', generated: 'registro de exportación', download: 'Demo PDF de', redownload: 'Historial de ejemplo de' },
+  fr: { progress: 'terminées', reports: 'éléments affichés', verified: 'Affichage', history: 'Historique des exports :', generated: 'historique d’export', download: 'Démo PDF de', redownload: 'Historique de démonstration de' },
 };
 for (const profile of step73Profiles) {
   for (const [language, expected] of Object.entries(step73Labels)) {
@@ -2263,7 +2263,7 @@ for (const profile of step73Profiles) {
 
       await activate('レポート出力');
       result.observations.historyBefore = (await content.innerText()).match(/出力履歴: \d+件/)?.[0] || '';
-      await content.getByRole('button', { name: /レポートを生成・出力/ }).click();
+      await content.getByRole('button', { name: /出力デモを実行/ }).click();
       await page.waitForTimeout(850);
       result.observations.historyAfter = (await content.innerText()).match(/出力履歴: \d+件/)?.[0] || '';
       result.checks.historyChanged = result.observations.historyBefore === '出力履歴: 3件' && result.observations.historyAfter === '出力履歴: 4件';
@@ -2281,9 +2281,9 @@ for (const profile of step73Profiles) {
         result.observations[keyName] = value;
         result.checks[keyName] = value.includes(required);
       };
-      await captureToast(content.locator('button').filter({ hasText: /再ダウンロード|Download again|Tải lại|重新下载|재다운로드|Volver a descargar|Télécharger à nouveau/ }).first(), 'redownloadTranslated', expected.redownload);
+      await captureToast(content.locator('button').filter({ hasText: /履歴デモを見る|View history demo|Xem lịch sử mẫu|查看历史记录演示|기록 데모 보기|Ver historial de ejemplo|Voir l’historique de démonstration/ }).first(), 'redownloadTranslated', expected.redownload);
       // Dynamic report-generation toast uses the currently selected export format.
-      const generate = content.locator('button').filter({ hasText: /レポートを生成・出力|Generate|xuất|生成|생성|Generar|Générer/ }).last();
+      const generate = content.locator('button').filter({ hasText: /出力デモを実行|Run (PDF|CSV|PPTX) export demo|Chạy bản demo xuất|运行(PDF|CSV|PPTX)导出演示|(PDF|CSV|PPTX) 내보내기 데모 실행|Ejecutar demo de exportación|Lancer la démo d’export/ }).last();
       if (await generate.count()) {
         await generate.click();
         await page.waitForTimeout(850);
