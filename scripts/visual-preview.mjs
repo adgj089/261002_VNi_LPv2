@@ -2438,6 +2438,142 @@ for (const testcase of issue05Cases) {
 summary.issue05Visual1024Qa = issue05Results;
 await fs.writeFile(path.join(outputDir, 'issue05-1024-diagnostics.json'), JSON.stringify(issue05Results, null, 2));
 
+// ISSUE-05-C: independent element-level FR 1024px GDP layout diagnostic.
+// Diagnostic-only: does not alter the existing 57 QA decisions.
+{
+  const detail = {
+    issue: 'ISSUE-05-C', kind: 'layout-detail', language: 'fr',
+    viewport: { width: 1024, height: 768 }, status: 'NOT TESTED',
+    observations: null, errors: [], pageErrors: []
+  };
+  const detailContext = await browser.newContext({
+    viewport: { width: 1024, height: 768 },
+    screen: { width: 1024, height: 768 },
+    deviceScaleFactor: 1, isMobile: false, locale: 'fr-FR'
+  });
+  try {
+    const detailPage = await detailContext.newPage();
+    detailPage.on('pageerror', error => detail.pageErrors.push(error.message));
+    await detailPage.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await detailPage.locator('.mockup-window').first().waitFor({ state: 'visible', timeout: 20000 });
+    const switcher = detailPage.locator('.vn-i18n-switcher:visible').first();
+    await switcher.locator('.vn-i18n-trigger').click();
+    await switcher.locator('[data-language="fr"]').click();
+    await detailPage.waitForTimeout(600);
+    detail.observations = await detailPage.evaluate(() => {
+      const root = document.querySelector('.mockup-main');
+      if (!root || innerWidth !== 1024 || document.documentElement.getAttribute('data-language') !== 'fr') {
+        throw new Error('FR 1024px context not established');
+      }
+      const targetText = 'Industrie manufacturière';
+      const leaves = [...root.querySelectorAll('span')].filter(el =>
+        el.textContent.trim() === targetText && el.getClientRects().length);
+      if (leaves.length !== 1) throw new Error('GDP legend target is not unique: ' + leaves.length);
+      const row = leaves[0].parentElement?.parentElement;
+      const legend = row?.parentElement;
+      const flex = legend?.parentElement;
+      const cardCandidates = [];
+      for (let p = flex; p && p !== root; p = p.parentElement) {
+        if (p.classList.contains('h-[130px]')) cardCandidates.push(p);
+      }
+      if (cardCandidates.length !== 1) throw new Error('GDP card is not unique: ' + cardCandidates.length);
+      const card = cardCandidates[0];
+      if (!card.contains(legend) || legend.children.length !== 5) throw new Error('GDP legend structure unexpected');
+      const title = card.firstElementChild;
+      const pie = flex.firstElementChild;
+      const rect = el => {
+        const r = el.getBoundingClientRect();
+        return { left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height };
+      };
+      const measure = (el, label, parent = card) => {
+        if (!el) return { label, found:false };
+        const r = rect(el), pr = rect(parent), s = getComputedStyle(el);
+        return {
+          label, found:true, text:el.textContent?.trim().slice(0,160) || '',
+          tag:el.tagName, className:el.getAttribute('class') || '',
+          rect:r, clientWidth:el.clientWidth, scrollWidth:el.scrollWidth,
+          clientHeight:el.clientHeight, scrollHeight:el.scrollHeight,
+          internalOverflowX:Math.max(0,el.scrollWidth-el.clientWidth),
+          internalOverflowY:Math.max(0,el.scrollHeight-el.clientHeight),
+          parentRect:pr, outsideParent:{
+            left:Math.max(0,pr.left-r.left), right:Math.max(0,r.right-pr.right),
+            top:Math.max(0,pr.top-r.top), bottom:Math.max(0,r.bottom-pr.bottom)
+          },
+          style:{
+            overflowX:s.overflowX,overflowY:s.overflowY,whiteSpace:s.whiteSpace,
+            overflowWrap:s.overflowWrap,wordBreak:s.wordBreak,gap:s.gap,
+            rowGap:s.rowGap,columnGap:s.columnGap,padding:s.padding,margin:s.margin,
+            flexShrink:s.flexShrink,flexGrow:s.flexGrow,minWidth:s.minWidth,
+            lineHeight:s.lineHeight,fontSize:s.fontSize,display:s.display,
+            justifyContent:s.justifyContent,alignItems:s.alignItems
+          }
+        };
+      };
+      const measureText = (el, label, parent) => {
+        const info = measure(el,label,parent);
+        if (!el) return info;
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const lines = [...range.getClientRects()].map(r => ({
+          left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height
+        }));
+        range.detach();
+        return { ...info, textLineRects:lines, textFragmentCount:lines.length };
+      };
+      const rows = [...legend.children].map((line, i) => {
+        const textGroup = line.firstElementChild;
+        const marker = textGroup?.firstElementChild;
+        const label = marker?.nextElementSibling;
+        const percent = line.lastElementChild;
+        return {
+          index:i+1,row:measure(line,'legend-row-'+(i+1),legend),
+          textGroup:measure(textGroup,'text-group-'+(i+1),line),
+          marker:measure(marker,'marker-'+(i+1),textGroup),
+          text:measureText(label,'legend-text-'+(i+1),textGroup),
+          percentage:measureText(percent,'percentage-'+(i+1),line)
+        };
+      });
+      const allDescendants = [card,...card.querySelectorAll('*')].map((el,i) => {
+        const r=rect(el), c=rect(card);
+        const style=getComputedStyle(el);
+        return { index:i,tag:el.tagName,className:el.getAttribute('class') || '',
+          text:el.children.length ? null : (el.textContent||'').trim().slice(0,90),
+          rect:r, outsideCard:{
+            left:Math.max(0,c.left-r.left),right:Math.max(0,r.right-c.right),
+            top:Math.max(0,c.top-r.top),bottom:Math.max(0,r.bottom-c.bottom)
+          }, overflowX:style.overflowX,overflowY:style.overflowY };
+      });
+      return {
+        viewport:{innerWidth,innerHeight,devicePixelRatio},
+        card:measure(card,'gdp-card',card.parentElement),
+        title:measureText(title,'card-title',card),
+        flex:measure(flex,'inner-flex',card),
+        pie:measure(pie,'css-conic-gradient-pie',flex),
+        legend:measure(legend,'legend-five-rows',flex),
+        rows,allDescendants,
+        titleToFlexGap:rect(flex).top-rect(title).bottom,
+        cardScrollExcess:{
+          horizontal:Math.max(0,card.scrollWidth-card.clientWidth),
+          vertical:Math.max(0,card.scrollHeight-card.clientHeight)
+        }
+      };
+    });
+    await detailPage.locator('.mockup-main').first().screenshot({
+      path: path.join(outputDir, 'issue05-c-layout-detail-1024-fr.png'),
+      animations: 'disabled'
+    });
+    detail.status = 'MEASURED';
+  } catch (error) {
+    detail.errors.push(String(error));
+  } finally {
+    await fs.writeFile(
+      path.join(outputDir, 'issue05-c-layout-detail-1024-fr.json'),
+      JSON.stringify(detail, null, 2)
+    );
+    await detailContext.close();
+  }
+}
+
 await browser.close();
 
 await fs.writeFile(
