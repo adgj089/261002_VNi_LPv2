@@ -1580,7 +1580,7 @@ for (const profile of step6KpiChatProfiles) {
         const label = card.querySelector('span');
         const row = [...card.children].find(node =>
           node.matches('div') &&
-          node.querySelector(':scope > span') &&
+          node.classList.contains('items-baseline') &&
           [...node.children].filter(child =>
             child.matches('span')
           ).length === 2
