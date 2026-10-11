@@ -1578,8 +1578,16 @@ for (const profile of step6KpiChatProfiles) {
       if (!grid) return { found: false, items: [] };
       const items = [...grid.children].map((card, index) => {
         const label = card.querySelector('span');
-        const row = card.querySelector('div.whitespace-nowrap.overflow-hidden');
-        const parts = row ? [...row.querySelectorAll('span')] : [];
+        const row = [...card.children].find(node =>
+          node.matches('div') &&
+          node.querySelector(':scope > span') &&
+          [...node.children].filter(child =>
+            child.matches('span')
+          ).length === 2
+        ) ?? null;
+        const parts = row
+          ? [...row.children].filter(child => child.matches('span'))
+          : [];
         const bounds = row?.getBoundingClientRect();
         const partRects = parts.map(part => part.getBoundingClientRect());
         const clippedPart = !!bounds && partRects.some(rect => rect.left < bounds.left - 1 || rect.right > bounds.right + 1);
