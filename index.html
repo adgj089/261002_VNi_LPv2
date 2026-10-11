@@ -491,7 +491,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
       };
       setExportHistory(prev => [newFile, ...prev]);
       setIsExporting(false);
-      j('カスタムレポート（' + exportFormat + '）の出力が完了しました');
+      j(exportFormat + 'のサンプル出力履歴を追加しました。実ファイルは生成されません。');
     }, 600);
   };
 
@@ -1067,11 +1067,11 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                 children: [
                   s.jsxDEV("span", { className: "text-slate-400 font-bold", children: r.size }, void 0, !1),
                   s.jsxDEV("button", {
-                    onClick: () => j('「' + r.title + '」のダウンロードを開始しました'),
+                    onClick: () => j('「' + r.title + '」のPDF表示デモです。ファイルはダウンロードされません。'),
                     className: "btn-pdf-download inline-flex items-center gap-1 px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded text-[8px] transition-colors cursor-pointer shadow-2xs", style: { backgroundColor: "#ef4444", color: "#ffffff" },
                     children: [
                       s.jsxDEV(Mv, { className: "w-2.5 h-2.5" }, void 0, !1),
-                      "PDFダウンロード"
+                      "PDFデモを確認"
                     ]
                   }, void 0, !0)
                 ]
@@ -1353,11 +1353,11 @@ You might need to use a local HTTP server (instead of file://): https://react.de
               children: [
                 s.jsxDEV("span", { className: "text-slate-500 font-bold", children: "全データ382件中 " + filtered.length + "件を表示" }, void 0, !1),
                 s.jsxDEV("button", {
-                  onClick: () => j("確認データ(CSV)をダウンロードしました"),
+                  onClick: () => j("CSV出力デモです。ファイルは生成されません。"),
                   className: "px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold rounded shadow-2xs hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer",
                   children: [
                     s.jsxDEV(Mv, { className: "w-2.5 h-2.5 text-slate-500" }, void 0, !1),
-                    "CSVエクスポート"
+                    "CSVデモを確認"
                   ]
                 }, void 0, !0)
               ]
@@ -1490,7 +1490,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
             className: "w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[9.5px] rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-70",
             children: [
               s.jsxDEV(Mv, { className: "w-3 h-3" }, void 0, !1),
-              isExporting ? "レポートを生成中..." : "「" + exportFormat + "」レポートを生成・出力"
+              isExporting ? "出力デモを処理中..." : "「" + exportFormat + "」出力デモを実行"
             ]
           }, void 0, !0)
         ]
@@ -1521,9 +1521,9 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                   ]
                 }, void 0, !0),
                 s.jsxDEV("button", {
-                  onClick: () => j(item.name + " を再ダウンロードしました"),
+                  onClick: () => j(item.name + " の履歴デモです。実ファイルはありません。"),
                   className: "px-2 py-0.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold rounded text-[7.5px] shrink-0 shadow-2xs cursor-pointer",
-                  children: "再ダウンロード"
+                  children: "履歴デモを見る"
                 }, void 0, !1)
               ]
             }, item.id, !0))
@@ -4678,7 +4678,7 @@ const step6Rows = [
   ["ベトナム主要業界レポート・市場動向","Vietnam Industry Reports & Market Trends","Báo cáo ngành & xu hướng thị trường Việt Nam","越南主要行业报告与市场趋势","베트남 주요 산업 보고서·시장 동향","Informes sectoriales y tendencias del mercado de Vietnam","Rapports sectoriels et tendances du marché vietnamien"],
   ["業界・キーワードでレポートを検索...","Search reports by industry or keyword...","Tìm báo cáo theo ngành hoặc từ khóa...","按行业或关键词搜索报告...","산업·키워드로 보고서 검색...","Buscar informes por sector o palabra clave...","Rechercher des rapports par secteur ou mot-clé..."],
   ["件表示中","items shown","mục đang hiển thị","条显示中","건 표시 중","elementos mostrados","éléments affichés"],
-  ["PDFダウンロード","Download PDF","Tải PDF","下载PDF","PDF 다운로드","Descargar PDF","Télécharger le PDF"],
+  ["PDFデモを確認","View PDF demo","Xem demo PDF","查看PDF演示","PDF 데모 보기","Ver demo PDF","Voir la démo PDF"],
   ["IT/DX市場予測","IT/DX Market Outlook","Dự báo thị trường IT/DX","IT/DX市场预测","IT/DX 시장 전망","Perspectivas del mercado IT/DX","Perspectives du marché IT/DX"],
   ["小売/EC市場規模","Retail/E-commerce Market Size","Quy mô thị trường bán lẻ/TMĐT","零售/电商市场规模","소매/이커머스 시장 규모","Tamaño del mercado retail/e-commerce","Taille du marché retail/e-commerce"],
   ["製造業・物流","Manufacturing & Logistics","Sản xuất & Logistics","制造业与物流","제조업·물류","Industria y logística","Industrie et logistique"],
@@ -4708,7 +4708,7 @@ const step6Rows = [
   ["企業名・指標名・情報ソースで検索...","Search by company, metric or source...","Tìm theo công ty, chỉ số hoặc nguồn...","按企业、指标或信息来源搜索...","기업명·지표명·정보 소스로 검색...","Buscar por empresa, indicador o fuente...","Rechercher par entreprise, indicateur ou source..."],
   ["全データ382件中","Out of 382 records","Trong tổng số 382 bản ghi","共382条数据中","전체 382건 중","De 382 registros","Sur 382 entrées"],
   ["件を表示","items shown","mục được hiển thị","条显示","건 표시","elementos mostrados","éléments affichés"],
-  ["CSVエクスポート","Export CSV","Xuất CSV","导出CSV","CSV 내보내기","Exportar CSV","Exporter en CSV"],
+  ["CSVデモを確認","View CSV demo","Xem demo CSV","查看CSV演示","CSV 데모 보기","Ver demo CSV","Voir la démo CSV"],
   ["照合","Verified","Đã đối chiếu","已核验","대조 완료","Verificado","Vérifié"],
   ["VinGroup Retail (HCM商業施設賃料)","VinGroup Retail (HCMC commercial rent)","VinGroup Retail (giá thuê thương mại HCMC)","VinGroup Retail（HCMC商业设施租金）","VinGroup Retail (HCMC 상업시설 임대료)","VinGroup Retail (alquiler comercial en HCMC)","VinGroup Retail (loyers commerciaux à HCMC)"],
   ["現地登記簿・店舗対面ヒアリング","Local registry & in-person store interviews","Đăng ký địa phương & phỏng vấn trực tiếp tại cửa hàng","本地登记资料与门店面对面访谈","현지 등기부·매장 대면 인터뷰","Registro local y entrevistas presenciales","Registre local et entretiens en magasin"],
@@ -4723,7 +4723,7 @@ const step6Rows = [
   ["ハノイ近郊 物流倉庫空室率 (ロジスティクス)","Logistics warehouse vacancy near Hanoi","Tỷ lệ trống kho logistics gần Hà Nội","河内近郊物流仓库空置率","하노이 근교 물류창고 공실률","Vacancia de almacenes logísticos cerca de Hanói","Taux de vacance des entrepôts logistiques près de Hanoï"],
   ["物流指標","Logistics Metric","Chỉ số logistics","物流指标","물류 지표","Indicador logístico","Indicateur logistique"],
   ["港湾局データ・デベロッパー監査","Port authority data & developer audit","Dữ liệu cảng vụ & kiểm toán chủ đầu tư","港务局数据与开发商审计","항만청 데이터·개발사 감사","Datos de autoridad portuaria y auditoría del promotor","Données de l’autorité portuaire et audit du développeur"],
-  ["カスタムレポート生成・エクスポート","Custom Report Generation & Export","Tạo & xuất báo cáo tùy chỉnh","生成与导出自定义报告","맞춤 보고서 생성·내보내기","Generación y exportación de informes personalizados","Génération et export de rapports personnalisés"],
+  ["カスタムレポート出力デモ","Custom Report Export Demo","Demo xuất báo cáo tùy chỉnh","自定义报告导出演示","맞춤 보고서 내보내기 데모","Demo de exportación de informes personalizados","Démo d’export de rapports personnalisés"],
   ["出力履歴:","Export history:","Lịch sử xuất:","导出历史：","출력 이력:","Historial de exportación:","Historique des exports :"],
   ["件","items","mục","条","건","elementos","éléments"],
   ["① 調査対象期間","① Research period","① Thời gian nghiên cứu","① 调研时间范围","① 조사 대상 기간","① Periodo de investigación","① Période de recherche"],
@@ -4731,7 +4731,7 @@ const step6Rows = [
   ["直近3ヶ月","Last 3 months","3 tháng gần nhất","最近3个月","최근 3개월","Últimos 3 meses","3 derniers mois"],
   ["2026年予測","2026 forecast","Dự báo 2026","2026年预测","2026년 전망","Previsión 2026","Prévisions 2026"],
   ["全期間","All time","Toàn bộ thời gian","全部期间","전체 기간","Todo el periodo","Toute la période"],
-  ["② ファイル出力形式","② File format","② Định dạng tệp","② 文件格式","② 파일 출력 형식","② Formato de archivo","② Format de fichier"],
+  ["② デモ出力形式","② Demo export format","② Định dạng xuất demo","② 演示导出格式","② 데모 내보내기 형식","② Formato de exportación demo","② Format d’export de démonstration"],
   ["PDF (役員会提出用)","PDF (board-ready)","PDF (dùng cho ban lãnh đạo)","PDF（董事会提交用）","PDF (이사회 제출용)","PDF (para consejo)","PDF (pour le conseil)"],
   ["CSV (ローデータ)","CSV (raw data)","CSV (dữ liệu thô)","CSV（原始数据）","CSV (원시 데이터)","CSV (datos brutos)","CSV (données brutes)"],
   ["PPTX (スライド)","PPTX (slides)","PPTX (slide)","PPTX（幻灯片）","PPTX (슬라이드)","PPTX (diapositivas)","PPTX (diapositives)"],
@@ -4740,8 +4740,8 @@ const step6Rows = [
   ["現地競合分析・シェア率比較","Local competitor analysis & market-share comparison","Phân tích đối thủ địa phương & so sánh thị phần","本地竞品分析与市场份额对比","현지 경쟁사 분석·점유율 비교","Análisis de competidores locales y comparación de cuota","Analyse des concurrents locaux et comparaison des parts de marché"],
   ["法規制リスク・許認可チェック","Regulatory risk & licensing check","Rủi ro pháp lý & kiểm tra giấy phép","法规风险与许可检查","법규 리스크·인허가 체크","Riesgo regulatorio y revisión de licencias","Risques réglementaires et vérification des autorisations"],
   ["財務シミュレーション・事業計画","Financial simulation & business plan","Mô phỏng tài chính & kế hoạch kinh doanh","财务模拟与商业计划","재무 시뮬레이션·사업 계획","Simulación financiera y plan de negocio","Simulation financière et plan d’affaires"],
-  ["出力履歴ログ (直近作成ファイル)","Export history (recent files)","Lịch sử xuất (tệp gần đây)","导出历史（最近文件）","출력 이력 (최근 파일)","Historial de exportación (archivos recientes)","Historique des exports (fichiers récents)"],
-  ["再ダウンロード","Download again","Tải lại","重新下载","재다운로드","Volver a descargar","Télécharger à nouveau"],
+  ["サンプル出力履歴","Sample export history","Lịch sử xuất mẫu","示例导出历史","샘플 내보내기 기록","Historial de exportación de ejemplo","Historique des exports de démonstration"],
+  ["履歴デモを見る","View history demo","Xem lịch sử mẫu","查看历史记录演示","기록 데모 보기","Ver historial de ejemplo","Voir l’historique de démonstration"],
   ["アカウント・システム設定","Account & System Settings","Cài đặt tài khoản & hệ thống","账户与系统设置","계정·시스템 설정","Configuración de cuenta y sistema","Paramètres du compte et du système"],
   ["アカウント・組織情報","Account & Organization","Tài khoản & tổ chức","账户与组织信息","계정·조직 정보","Cuenta y organización","Compte et organisation"],
   ["ユーザー名","User Name","Tên người dùng","用户名","사용자명","Nombre de usuario","Nom d’utilisateur"],
@@ -4766,7 +4766,7 @@ const step6Rows = [
   ["APIキーを再生成しました","API key regenerated","Đã tạo lại khóa API","API密钥已重新生成","API 키를 재생성했습니다","Clave API regenerada","Clé API régénérée"],
   ["設定を保存しました","Settings saved","Đã lưu cài đặt","设置已保存","설정을 저장했습니다","Configuración guardada","Paramètres enregistrés"],
   ["調査を開始しました","Research started","Đã bắt đầu nghiên cứu","调研已开始","조사를 시작했습니다","Investigación iniciada","Recherche lancée"],
-  ["レポートを生成中...","Generating report...","Đang tạo báo cáo...","正在生成报告...","보고서 생성 중...","Generando informe...","Génération du rapport..."],
+  ["出力デモを処理中...","Processing export demo...","Đang xử lý demo xuất...","正在处理导出演示...","내보내기 데모 처리 중...","Procesando demo de exportación...","Traitement de la démo d’export..."],
   ["PDFを出力中...","Exporting PDF...","Đang xuất PDF...","正在导出PDF...","PDF 출력 중...","Exportando PDF...","Export du PDF..."],
   ["PPTXを出力中...","Exporting PPTX...","Đang xuất PPTX...","正在导出PPTX...","PPTX 출력 중...","Exportando PPTX...","Export du PPTX..."],
   ["アクションを実行しました","Action completed","Đã thực hiện thao tác","操作已执行","작업을 실행했습니다","Acción completada","Action effectuée"],
@@ -4810,7 +4810,10 @@ const useCaseRows = [
 ];
 
 const toastRows = [
-  ["確認データ(CSV)をダウンロードしました","Verified data (CSV) downloaded","Đã tải dữ liệu đã xác minh (CSV)","已下载核验数据（CSV）","확인 데이터(CSV)를 다운로드했습니다","Datos verificados (CSV) descargados","Données vérifiées (CSV) téléchargées"],
+  ["「PDF」出力デモを実行","Run PDF export demo","Chạy bản demo xuất PDF","运行PDF导出演示","PDF 내보내기 데모 실행","Ejecutar demo de exportación PDF","Lancer la démo d’export PDF"],
+  ["「CSV」出力デモを実行","Run CSV export demo","Chạy bản demo xuất CSV","运行CSV导出演示","CSV 내보내기 데모 실행","Ejecutar demo de exportación CSV","Lancer la démo d’export CSV"],
+  ["「PPTX」出力デモを実行","Run PPTX export demo","Chạy bản demo xuất PPTX","运行PPTX导出演示","PPTX 내보내기 데모 실행","Ejecutar demo de exportación PPTX","Lancer la démo d’export PPTX"],
+  ["CSV出力デモです。ファイルは生成されません。","CSV export demo. No file was generated.","Đây là demo xuất CSV. Không có tệp nào được tạo.","这是CSV导出演示，未生成实际文件。","CSV 내보내기 데모입니다. 실제 파일은 생성되지 않습니다.","Demo de exportación CSV. No se generó ningún archivo.","Démo d’export CSV. Aucun fichier n’a été généré."],
   ["レポート生成のシミュレーションを開始しました","Report-generation simulation started","Đã bắt đầu mô phỏng tạo báo cáo","已开始报告生成模拟","보고서 생성 시뮬레이션을 시작했습니다","Simulación de generación de informe iniciada","Simulation de génération de rapport lancée"],
   ["EC市場トレンドレポートを開きます","Opening e-commerce market trends report","Đang mở báo cáo xu hướng thị trường TMĐT","正在打开电商市场趋势报告","이커머스 시장 트렌드 보고서를 엽니다","Abriendo informe de tendencias de e-commerce","Ouverture du rapport sur les tendances e-commerce"],
   ["製造業レポートを開きます","Opening manufacturing report","Đang mở báo cáo ngành sản xuất","正在打开制造业报告","제조업 보고서를 엽니다","Abriendo informe de manufactura","Ouverture du rapport sur l’industrie manufacturière"],
@@ -4845,42 +4848,42 @@ const attributeRows = [
   const translateDynamicText = (source, language) => {
     if (language === 'ja') return source;
 
-    let match = source.match(/^カスタムレポート（(.+?)）の出力が完了しました$/);
+    let match = source.match(/^(PDF|CSV|PPTX)のサンプル出力履歴を追加しました。実ファイルは生成されません。$/);
     if (match) {
       const format = match[1];
       return {
-        en: `Custom report (${format}) export completed`,
-        vi: `Đã xuất xong báo cáo tùy chỉnh (${format})`,
-        zh: `自定义报告（${format}）导出完成`,
-        ko: `맞춤 보고서(${format}) 내보내기가 완료되었습니다`,
-        es: `Informe personalizado (${format}) exportado correctamente`,
-        fr: `Rapport personnalisé (${format}) exporté avec succès`,
+        en: `Sample ${format} export history added. No file was generated.`,
+        vi: `Đã thêm lịch sử xuất ${format} mẫu. Không có tệp nào được tạo.`,
+        zh: `已添加${format}示例导出记录，未生成实际文件。`,
+        ko: `${format} 샘플 내보내기 기록이 추가되었습니다. 실제 파일은 생성되지 않습니다.`,
+        es: `Se añadió un registro de exportación ${format} de ejemplo. No se generó ningún archivo.`,
+        fr: `Un historique d’export ${format} fictif a été ajouté. Aucun fichier n’a été généré.`,
       }[language] || source;
     }
 
-    match = source.match(/^「(.+)」のダウンロードを開始しました$/);
+    match = source.match(/^「(.+)」のPDF表示デモです。ファイルはダウンロードされません。$/);
     if (match) {
       const title = maps[language].get(match[1]) || match[1];
       return {
-        en: `Started downloading “${title}”`,
-        vi: `Đã bắt đầu tải xuống “${title}”`,
-        zh: `已开始下载“${title}”`,
-        ko: `“${title}” 다운로드를 시작했습니다`,
-        es: `Se inició la descarga de «${title}»`,
-        fr: `Téléchargement de « ${title} » démarré`,
+        en: `PDF demo for “${title}”. No file was downloaded.`,
+        vi: `Demo PDF cho “${title}”. Không có tệp nào được tải xuống.`,
+        zh: `“${title}”的PDF演示，未下载实际文件。`,
+        ko: `“${title}” PDF 데모입니다. 실제 파일은 다운로드되지 않습니다.`,
+        es: `Demo PDF de «${title}». No se descargó ningún archivo.`,
+        fr: `Démo PDF de « ${title} ». Aucun fichier n’a été téléchargé.`,
       }[language] || source;
     }
 
-    match = source.match(/^(.+?) を再ダウンロードしました$/);
+    match = source.match(/^(.+?) の履歴デモです。実ファイルはありません。$/);
     if (match) {
       const name = match[1];
       return {
-        en: `${name} downloaded again`,
-        vi: `Đã tải lại ${name}`,
-        zh: `已重新下载 ${name}`,
-        ko: `${name} 재다운로드 완료`,
-        es: `${name} descargado de nuevo`,
-        fr: `${name} téléchargé à nouveau`,
+        en: `History demo for ${name}. No actual file exists.`,
+        vi: `Demo lịch sử cho ${name}. Không có tệp thực.`,
+        zh: `${name} 的历史记录演示，不存在实际文件。`,
+        ko: `${name} 기록 데모입니다. 실제 파일은 없습니다.`,
+        es: `Historial de ejemplo de ${name}. No existe un archivo real.`,
+        fr: `Historique de démonstration de ${name}. Aucun fichier réel n’existe.`,
       }[language] || source;
     }
 
@@ -4942,9 +4945,9 @@ const attributeRows = [
   };
 
   const isDynamicTranslatable = source =>
-    /^カスタムレポート（.+?）の出力が完了しました$/.test(source) ||
-    /^「.+」のダウンロードを開始しました$/.test(source) ||
-    /^.+? を再ダウンロードしました$/.test(source) ||
+    /^(PDF|CSV|PPTX)のサンプル出力履歴を追加しました。実ファイルは生成されません。$/.test(source) ||
+    /^「.+」のPDF表示デモです。ファイルはダウンロードされません。$/.test(source) ||
+    /^.+? の履歴デモです。実ファイルはありません。$/.test(source) ||
     /^\d+ \/ \d+ 完了$/.test(source) ||
     /^\d+件表示中$/.test(source) ||
     /^全データ\d+件中 \d+件を表示$/.test(source) ||
