@@ -2322,6 +2322,122 @@ for (const profile of step73Profiles) {
 summary.step73DynamicQa = step73Results;
 await fs.writeFile(path.join(outputDir, 'step7-3-dynamic-diagnostics.json'), JSON.stringify(step73Results, null, 2));
 
+
+// ISSUE-05-A/B/C: separate 1024px ES/FR layout measurements; keep existing 54 cases intact.
+const issue05Results = {};
+const issue05Cases = [
+  { id: 'ISSUE-05-A', lang: 'es', labels: ['Informes sectoriales', 'Plan de investigación'] },
+  { id: 'ISSUE-05-B', lang: 'fr', labels: ['Population totale', 'IDE approuvés'] },
+  { id: 'ISSUE-05-C', lang: 'fr', labels: ['Industrie manufacturière', 'Commerce de gros et de détail'] },
+];
+for (const testcase of issue05Cases) {
+  const result = { issue: testcase.id, language: testcase.lang, viewport: { width: 1024, height: 768 },
+    status: 'NOT TESTED', checks: {}, items: [], errors: [], pageErrors: [] };
+  const context = await browser.newContext({ viewport: { width: 1024, height: 768 },
+    screen: { width: 1024, height: 768 }, deviceScaleFactor: 1, isMobile: false, locale: testcase.lang + '-' + testcase.lang.toUpperCase() });
+  try {
+    const page = await context.newPage();
+    page.on('pageerror', error => result.pageErrors.push(error.message));
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.locator('.mockup-window').first().waitFor({ state: 'visible', timeout: 20000 });
+    const switcher = page.locator('.vn-i18n-switcher:visible').first();
+    await switcher.locator('.vn-i18n-trigger').click();
+    await switcher.locator('[data-language="' + testcase.lang + '"]').click();
+    await page.waitForTimeout(600);
+    result.checks.actualViewport = await page.evaluate(() => innerWidth === 1024);
+    result.checks.correctLanguage = await page.locator('html').getAttribute('data-language') === testcase.lang;
+    result.items = await page.locator('.mockup-window').first().evaluate((mockup, testcase) => {
+      const visible = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+      const box = el => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom,
+          width: r.width, height: r.height, clientWidth: el.clientWidth, scrollWidth: el.scrollWidth,
+          clientHeight: el.clientHeight, scrollHeight: el.scrollHeight };
+      };
+      const within = (inner, outer) => inner.left >= outer.left - 1 && inner.right <= outer.right + 1 &&
+        inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+      const targetRoot = testcase.id === 'ISSUE-05-A'
+        ? mockup.querySelector('.mockup-sidebar') : mockup.querySelector('.mockup-main');
+      if (!targetRoot) return testcase.labels.map(label => ({ label, found: false }));
+      return testcase.labels.map(label => {
+        const candidates = [...targetRoot.querySelectorAll('span,div,p')].filter(el =>
+          visible(el) && el.textContent.trim() === label &&
+          ![...el.children].some(child => child.textContent.trim() === label));
+        const el = candidates[0];
+        if (!el) return { label, found: false };
+        const parent = el.parentElement;
+        const textBox = box(el), parentBox = box(parent);
+        const style = getComputedStyle(el);
+        const item = { label, found: true, text: el.textContent.trim(),
+          textBox, parentBox, whiteSpace: style.whiteSpace, overflowX: style.overflowX,
+          overflowY: style.overflowY, textFitsParent: within(textBox, parentBox),
+          noInternalOverflow: el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1 };
+        if (testcase.id === 'ISSUE-05-A') {
+          const sidebar = mockup.querySelector('.mockup-sidebar');
+          const sideBox = box(sidebar);
+          const main = mockup.querySelector('.mockup-main');
+          const mainBox = main ? box(main) : null;
+          item.sidebarBox = sideBox;
+          item.mainBox = mainBox;
+          item.noSidebarOverflow = textBox.right <= sideBox.right + 1 && textBox.left >= sideBox.left - 1;
+          item.noMainObscuring = !mainBox || textBox.right <= mainBox.left + 1 ||
+            getComputedStyle(main).position === 'static' && textBox.right <= sideBox.right + 1;
+        } else if (testcase.id === 'ISSUE-05-B') {
+          const card = el.closest('.dashboard-kpi-card');
+          const row = card && [...card.children].find(child => child.classList.contains('items-baseline'));
+          const parts = row ? [...row.children].filter(child => child.matches('span')) : [];
+          item.cardBox = card ? box(card) : null;
+          item.rowBox = row ? box(row) : null;
+          item.value = parts.map(part => part.textContent.trim()).join(' ');
+          item.parts = parts.map(part => ({ text: part.textContent.trim(), box: box(part) }));
+          item.valueComplete = parts.length === 2 && parts.every(part => within(box(part), box(card))) &&
+            !!row && row.scrollWidth <= row.clientWidth + 1 &&
+            parts.every(part => part.scrollWidth <= part.clientWidth + 1);
+        } else {
+          const row = parent;
+          const rowBox = box(row);
+          const legendContainer = row.parentElement;
+          const legendBox = legendContainer ? box(legendContainer) : null;
+          const panel = [...(function*(node) { while (node && node !== mockup) {
+            if (node.getBoundingClientRect().height >= 125 && node.getBoundingClientRect().height <= 135) yield node;
+            node = node.parentElement;
+          } })(row)].find(node => node.querySelectorAll('svg').length > 0);
+          item.legendRowBox = rowBox;
+          item.legendBox = legendBox;
+          item.panelBox = panel ? box(panel) : null;
+          item.legendFits = !!legendContainer && within(textBox, legendBox) &&
+            row.scrollWidth <= row.clientWidth + 1 && legendContainer.scrollHeight <= legendContainer.clientHeight + 1;
+          item.card130Fits = !!panel && within(rowBox, box(panel));
+        }
+        return item;
+      });
+    }, testcase);
+    result.checks.allLabelsFound = result.items.length === 2 && result.items.every(item => item.found);
+    if (testcase.id === 'ISSUE-05-A') {
+      result.checks.noSidebarClipping = result.items.every(item =>
+        item.found && item.noSidebarOverflow && item.noInternalOverflow && item.noMainObscuring);
+    } else if (testcase.id === 'ISSUE-05-B') {
+      result.checks.kpiValuesAndUnitsVisible = result.items.every(item =>
+        item.found && item.valueComplete && item.noInternalOverflow);
+    } else {
+      result.checks.gdpLegendVisible = result.items.every(item =>
+        item.found && item.legendFits && item.noInternalOverflow && item.card130Fits);
+    }
+    await page.screenshot({ path: path.join(outputDir, testcase.id.toLowerCase() + '-1024-' + testcase.lang + '.png'),
+      fullPage: true, animations: 'disabled' });
+    result.checks.noPageErrors = result.pageErrors.length === 0;
+    result.status = Object.values(result.checks).every(Boolean) ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'NOT TESTED';
+  } finally {
+    issue05Results[testcase.id] = result;
+    await context.close();
+  }
+}
+summary.issue05Visual1024Qa = issue05Results;
+await fs.writeFile(path.join(outputDir, 'issue05-1024-diagnostics.json'), JSON.stringify(issue05Results, null, 2));
+
 await browser.close();
 
 await fs.writeFile(
