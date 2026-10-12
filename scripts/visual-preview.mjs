@@ -2217,6 +2217,7 @@ for (const profile of step73Profiles) {
       const entries = profile.isMobile ? 'button' : 'div.cursor-pointer';
       const activate = async (text) => {
         const item = menu.locator(entries).filter({ hasText: text }).first();
+        result.observations.lastMenuAttempt = { requested: text, language: await page.locator('html').getAttribute('data-language'), candidates: await menu.locator(entries).allTextContents(), matchedCount: await menu.locator(entries).filter({ hasText: text }).count(), menuVisible: await menu.isVisible().catch(() => false) };
         await item.scrollIntoViewIfNeeded();
         await item.click({ timeout: 10000 });
         await page.waitForTimeout(220);
