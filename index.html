@@ -882,7 +882,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
               }, void 0, !0),
               s.jsxDEV("p", {
                 className: "text-[8px] sm:text-[8.5px] text-slate-600 font-medium leading-relaxed mb-2 line-clamp-3",
-                children: "「2026年改定の新投資法により、外資系小売チェーンの出店規制(ENT)緩和が試験導入。主要都市部での進出スピードが従来の2倍に加速する見通し。」"
+                children: "【仮想シナリオ】外資系小売企業の出店審査条件が変更された場合を想定し、市場参入への影響を整理した表示例です。"
               }, void 0, !1),
               s.jsxDEV("button", {
                 onClick: () => setActiveMenu('audited-data'),
@@ -933,9 +933,9 @@ You might need to use a local HTTP server (instead of file://): https://react.de
       },
       {
         id: 'r4',
-        title: '外資規制・2026年法改正ロードマップ解説書',
+        title: '【仮想事例】外資規制変更シナリオ分析',
         cat: '法規制',
-        desc: '新投資法・環境基準改定に伴う認可取得プロセスの変更点と実務上の留意点。',
+        desc: '外資系企業の出店・許認可条件が変更された場合を想定し、対応上の検討事項を整理したデモレポートです。',
         date: '2026.01',
         size: '3.9 MB',
         growth: '+12.0%'
@@ -1232,12 +1232,12 @@ You might need to use a local HTTP server (instead of file://): https://react.de
   // 4. Audited Data View
   const renderAuditedData = () => {
     const rawData = [
-      { id: 'ad1', item: 'VinGroup Retail (HCM商業施設賃料)', cat: '財務データ', value: '$135 / ㎡ / 月', source: '現地登記簿・店舗対面ヒアリング', date: '2026.03.22', verified: true },
-      { id: 'ad2', item: 'Shopee VN vs TikTok Shop (EC流通シェア)', cat: 'シェア率', value: '54.2% vs 31.8%', source: '税務申告データ・電子決済統計', date: '2026.03.20', verified: true },
-      { id: 'ad3', item: 'Masan Group (日用品・調味料流通マージン)', cat: '財務データ', value: '28.5% (平均粗利)', source: '公開年次決算・現地情報', date: '2026.03.18', verified: true },
-      { id: 'ad4', item: '外資100%小売出店ライセンス (ENT審査)', cat: '法規制', value: '取得期間: 平均4.2ヶ月', source: '商工省(MoIT)通達・弁護士確認', date: '2026.03.15', verified: true },
-      { id: 'ad5', item: 'FPT Corporation (ITエンジニア初任給)', cat: '人件費', value: '$920 / 月', source: '現地HR企業3社給与サーベイ', date: '2026.03.12', verified: true },
-      { id: 'ad6', item: 'ハノイ近郊 物流倉庫空室率 (ロジスティクス)', cat: '物流指標', value: '4.8% (需給逼迫)', source: '港湾局データ・デベロッパー監査', date: '2026.03.08', verified: true }
+      { id: 'ad1', item: '架空施設A（商業施設賃料）', cat: '財務データ', value: '$135 / ㎡ / 月', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.22', verified: true },
+      { id: 'ad2', item: '架空EC事業者B・C（EC流通シェア）', cat: 'シェア率', value: '54.2% vs 31.8%', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.20', verified: true },
+      { id: 'ad3', item: '架空流通企業D（日用品流通マージン）', cat: '財務データ', value: '28.5% (平均粗利)', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.18', verified: true },
+      { id: 'ad4', item: '仮想規制事例E（小売出店審査）', cat: '法規制', value: '取得期間: 平均4.2ヶ月', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.15', verified: true },
+      { id: 'ad5', item: '架空IT企業F（エンジニア初任給）', cat: '人件費', value: '$920 / 月', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.12', verified: true },
+      { id: 'ad6', item: '架空物流施設G（倉庫空室率）', cat: '物流指標', value: '4.8% (需給逼迫)', source: 'デモ用仮想データ（実際の照合なし）', date: '2026.03.08', verified: true }
     ];
 
     const cats = ['すべて', '財務データ', '法規制', 'シェア率', '人件費'];
@@ -4529,7 +4529,7 @@ html[data-language]:not([data-language="ja"]) .hero-title > span {
   };
 
   const fragmentRows = [
-    ['「2026年改定の新投資法により、外資系小売チェーンの出店規制(ENT)緩和が試験導入。主要都市部での進出スピードが従来の2倍に加速する見通し。」','“The revised 2026 Investment Law pilots relaxed ENT rules for foreign retail chains, potentially doubling expansion speed in major cities.”','“Luật Đầu tư sửa đổi năm 2026 thí điểm nới lỏng quy định ENT cho chuỗi bán lẻ nước ngoài, có thể tăng gấp đôi tốc độ mở rộng tại các thành phố lớn.”','“2026年修订投资法试行放宽外资零售连锁的ENT限制，主要城市的扩张速度预计将提升至两倍。”','“2026년 개정 투자법으로 외국계 소매 체인의 ENT 규제가 시범 완화되어 주요 도시 진출 속도가 두 배 빨라질 전망입니다.”','«La Ley de Inversión revisada en 2026 prueba una flexibilización del ENT para cadenas extranjeras, que podría duplicar su expansión en las grandes ciudades.»','«La loi sur l’investissement révisée en 2026 teste un assouplissement de l’ENT pour les chaînes étrangères, susceptible de doubler leur expansion dans les grandes villes.»'],
+    ["【仮想シナリオ】外資系小売企業の出店審査条件が変更された場合を想定し、市場参入への影響を整理した表示例です。","[Hypothetical scenario] Illustration of how changes to foreign retailers’ store approval requirements might affect market entry.","[Kịch bản giả định] Ví dụ về tác động của thay đổi quy định phê duyệt cửa hàng bán lẻ nước ngoài đối với việc gia nhập thị trường.","【假设情景】展示外资零售企业开店审批条件若发生变化，对市场准入的可能影响。","[가상 시나리오] 외국계 소매기업의 출점 승인 조건 변경이 시장 진출에 미칠 영향을 보여 주는 예시입니다.","[Escenario hipotético] Ejemplo de cómo cambios en los permisos de apertura podrían afectar la entrada al mercado.","[Scénario hypothétique] Exemple des effets possibles d’un changement des autorisations d’ouverture sur l’entrée sur le marché."],
     ['従来の海外リサーチの','Traditional overseas research','Nghiên cứu thị trường nước ngoài truyền thống','传统海外调研的','기존 해외 리서치의','Investigación internacional tradicional','Études internationales traditionnelles'],
     ['課題','challenges','vấn đề','问题','과제','problemas','difficultés'],
     ['課題①','Challenge 1','Vấn đề 1','问题①','과제 ①','Problema 1','Difficulté 1'],
@@ -4688,8 +4688,8 @@ const step6Rows = [
   ["Shopee/TikTok Shop二強時代の物流ネットワークと消費者の購買決定要因。","Logistics networks and consumer purchase drivers in the Shopee/TikTok Shop era.","Mạng lưới logistics và yếu tố quyết định mua hàng trong thời kỳ Shopee/TikTok Shop.","Shopee/TikTok Shop双雄时代的物流网络与消费者购买决策因素。","Shopee/TikTok Shop 양강 시대의 물류 네트워크와 소비자 구매 결정 요인.","Redes logísticas y factores de compra en la era Shopee/TikTok Shop.","Réseaux logistiques et facteurs d’achat à l’ère Shopee/TikTok Shop."],
   ["北部・南部 工業団地インフラ・コスト徹底比較","North vs. South Industrial Parks: Infrastructure & Cost Comparison","So sánh hạ tầng & chi phí KCN miền Bắc và miền Nam","越南北部与南部工业园区基础设施及成本对比","북부·남부 산업단지 인프라·비용 비교","Comparativa de infraestructura y costes de parques industriales del norte y sur","Comparatif des infrastructures et coûts des zones industrielles du Nord et du Sud"],
   ["ハノイ近郊 vs ホーチミン経済圏の電力安定性・人件費・税制優遇措置の実態。","Power stability, labor costs and tax incentives: Hanoi outskirts vs. HCMC region.","Độ ổn định điện, chi phí nhân công và ưu đãi thuế: vùng ven Hà Nội so với TP.HCM.","河内近郊与胡志明市经济圈的供电稳定性、人力成本及税收优惠对比。","하노이 근교와 호찌민 경제권의 전력 안정성·인건비·세제 혜택 비교.","Estabilidad eléctrica, costes laborales e incentivos fiscales: Hanói vs. HCMC.","Stabilité électrique, coûts salariaux et incitations fiscales : Hanoï vs HCMC."],
-  ["外資規制・2026年法改正ロードマップ解説書","Foreign Investment Regulations & 2026 Legal Reform Roadmap","Quy định đầu tư nước ngoài & lộ trình sửa đổi luật 2026","外资监管与2026年法律修订路线图","외자 규제·2026년 법 개정 로드맵","Regulación de inversión extranjera y hoja de ruta legal 2026","Réglementation des investissements étrangers et feuille de route juridique 2026"],
-  ["新投資法・環境基準改定に伴う認可取得プロセスの変更点と実務上の留意点。","Licensing changes and practical considerations under revised investment and environmental rules.","Thay đổi quy trình cấp phép và lưu ý thực tiễn theo luật đầu tư và môi trường sửa đổi.","新投资法及环境标准修订后的许可流程变化与实务注意事项。","신 투자법·환경 기준 개정에 따른 인허가 절차 변경과 실무 유의사항.","Cambios de licencias y consideraciones prácticas tras reformas de inversión y medio ambiente.","Évolutions des autorisations et points de vigilance après réforme de l’investissement et de l’environnement."],
+  ["【仮想事例】外資規制変更シナリオ分析","[Hypothetical case] Foreign investment rule change scenario","[Tình huống giả định] Kịch bản thay đổi quy định đầu tư nước ngoài","【假设案例】外资监管变化情景分析","[가상 사례] 외국인 투자 규제 변경 시나리오","[Caso hipotético] Cambio de reglas de inversión extranjera","[Cas hypothétique] Modification des règles d’investissement étranger"],
+  ["外資系企業の出店・許認可条件が変更された場合を想定し、対応上の検討事項を整理したデモレポートです。","Demo report on considerations if foreign companies’ store approval and licensing requirements changed.","Báo cáo demo về các vấn đề cần xem xét nếu điều kiện phê duyệt và cấp phép cho doanh nghiệp nước ngoài thay đổi.","演示报告：假设外资企业开店审批及许可条件变化，梳理需要考虑的事项。","외국계 기업의 출점·인허가 조건 변경을 가정하고 검토 사항을 정리한 데모 보고서입니다.","Informe de demostración sobre qué considerar si cambiaran los requisitos de autorización de empresas extranjeras.","Rapport de démonstration sur les points à examiner en cas de changement des règles d’autorisation des entreprises étrangères."],
   ["日系企業の現地合弁・M&A成功と失敗の教訓集","Lessons from Japanese Companies’ JV & M&A Successes and Failures","Bài học thành công và thất bại từ liên doanh & M&A của doanh nghiệp Nhật","日资企业本地合资与M&A成败经验","일본계 기업의 현지 합작·M&A 성공과 실패 사례","Lecciones de éxitos y fracasos de JV y M&A de empresas japonesas","Enseignements des succès et échecs de JV et M&A d’entreprises japonaises"],
   ["過去5年間に進出した中堅・中小企業42社の事例から紐解くリスク管理術。","Risk-management lessons from 42 SME and mid-sized market-entry cases over five years.","Bài học quản trị rủi ro từ 42 trường hợp doanh nghiệp vừa và nhỏ trong 5 năm.","从过去5年42家中小及中型企业进入市场案例中总结风险管理方法。","최근 5년간 진출한 중견·중소기업 42개 사례에서 배우는 리스크 관리.","Lecciones de gestión de riesgos de 42 casos de entrada de pymes en cinco años.","Leçons de gestion des risques tirées de 42 implantations de PME et ETI sur cinq ans."],
   ["ベトナム脱炭素・グリーン成長投資機会分析","Vietnam Decarbonization & Green Growth Investment Opportunities","Cơ hội đầu tư khử carbon & tăng trưởng xanh tại Việt Nam","越南脱碳与绿色增长投资机会分析","베트남 탈탄소·녹색성장 투자 기회 분석","Oportunidades de inversión en descarbonización y crecimiento verde en Vietnam","Opportunités d’investissement dans la décarbonation et la croissance verte au Vietnam"],
@@ -4710,19 +4710,19 @@ const step6Rows = [
   ["件を表示","items shown","mục được hiển thị","条显示","건 표시","elementos mostrados","éléments affichés"],
   ["CSVデモを確認","View CSV demo","Xem demo CSV","查看CSV演示","CSV 데모 보기","Ver demo CSV","Voir la démo CSV"],
   ["照合","Verified","Đã đối chiếu","已核验","대조 완료","Verificado","Vérifié"],
-  ["VinGroup Retail (HCM商業施設賃料)","VinGroup Retail (HCMC commercial rent)","VinGroup Retail (giá thuê thương mại HCMC)","VinGroup Retail（HCMC商业设施租金）","VinGroup Retail (HCMC 상업시설 임대료)","VinGroup Retail (alquiler comercial en HCMC)","VinGroup Retail (loyers commerciaux à HCMC)"],
-  ["現地登記簿・店舗対面ヒアリング","Local registry & in-person store interviews","Đăng ký địa phương & phỏng vấn trực tiếp tại cửa hàng","本地登记资料与门店面对面访谈","현지 등기부·매장 대면 인터뷰","Registro local y entrevistas presenciales","Registre local et entretiens en magasin"],
-  ["Shopee VN vs TikTok Shop (EC流通シェア)","Shopee VN vs TikTok Shop (e-commerce share)","Shopee VN vs TikTok Shop (thị phần TMĐT)","Shopee VN vs TikTok Shop（电商份额）","Shopee VN vs TikTok Shop (이커머스 점유율)","Shopee VN vs TikTok Shop (cuota e-commerce)","Shopee VN vs TikTok Shop (part e-commerce)"],
-  ["税務申告データ・電子決済統計","Tax filing data & e-payment statistics","Dữ liệu khai thuế & thống kê thanh toán điện tử","税务申报数据与电子支付统计","세무 신고 데이터·전자결제 통계","Datos fiscales y estadísticas de pagos electrónicos","Données fiscales et statistiques de paiement électronique"],
-  ["Masan Group (日用品・調味料流通マージン)","Masan Group (FMCG & seasoning distribution margin)","Masan Group (biên lợi nhuận phân phối FMCG & gia vị)","Masan Group（日用品与调味品流通利润率）","Masan Group (생활용품·조미료 유통 마진)","Masan Group (margen de distribución de consumo y condimentos)","Masan Group (marge de distribution produits courants et condiments)"],
-  ["公開年次決算・現地情報","Published annual results & local information","Báo cáo năm công khai & thông tin địa phương","公开年度财报与本地信息","공개 연차 결산·현지 정보","Resultados anuales publicados e información local","Résultats annuels publiés et informations locales"],
-  ["外資100%小売出店ライセンス (ENT審査)","100% foreign-owned retail license (ENT review)","Giấy phép bán lẻ 100% vốn nước ngoài (thẩm định ENT)","外资100%零售许可（ENT审查）","외자 100% 소매 라이선스 (ENT 심사)","Licencia retail 100 % extranjera (revisión ENT)","Licence retail 100 % étrangère (examen ENT)"],
-  ["商工省(MoIT)通達・弁護士確認","MoIT circulars & lawyer verification","Thông tư MoIT & xác nhận luật sư","工贸部（MoIT）通知与律师核验","상공부(MoIT) 통지·변호사 확인","Circulares del MoIT y verificación jurídica","Circulaires du MoIT et vérification juridique"],
-  ["FPT Corporation (ITエンジニア初任給)","FPT Corporation (entry-level IT engineer salary)","FPT Corporation (lương khởi điểm kỹ sư IT)","FPT Corporation（IT工程师起薪）","FPT Corporation (IT 엔지니어 초봉)","FPT Corporation (salario inicial de ingeniero IT)","FPT Corporation (salaire d’entrée d’un ingénieur IT)"],
-  ["現地HR企業3社給与サーベイ","Salary surveys from 3 local HR firms","Khảo sát lương từ 3 công ty nhân sự địa phương","3家本地HR公司的薪资调查","현지 HR 기업 3개사 급여 서베이","Encuestas salariales de 3 firmas locales de RR. HH.","Enquêtes salariales de 3 cabinets RH locaux"],
-  ["ハノイ近郊 物流倉庫空室率 (ロジスティクス)","Logistics warehouse vacancy near Hanoi","Tỷ lệ trống kho logistics gần Hà Nội","河内近郊物流仓库空置率","하노이 근교 물류창고 공실률","Vacancia de almacenes logísticos cerca de Hanói","Taux de vacance des entrepôts logistiques près de Hanoï"],
+  ["架空施設A（商業施設賃料）","Fictional Facility A (commercial rent)","Cơ sở giả định A (giá thuê thương mại)","虚构设施A（商业租金）","가상 시설 A(상업시설 임대료)","Instalación ficticia A (alquiler comercial)","Installation fictive A (loyer commercial)"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
+  ["架空EC事業者B・C（EC流通シェア）","Fictional E-commerce Operators B & C","Nhà cung cấp TMĐT giả định B và C","虚构电商企业B与C","가상 전자상거래 기업 B·C","Operadores ficticios de comercio electrónico B y C","Opérateurs fictifs d’e-commerce B et C"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
+  ["架空流通企業D（日用品流通マージン）","Fictional Distributor D (distribution margin)","Nhà phân phối giả định D (biên lợi nhuận)","虚构流通企业D（流通毛利）","가상 유통기업 D(유통 마진)","Distribuidora ficticia D (margen)","Distributeur fictif D (marge)"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
+  ["仮想規制事例E（小売出店審査）","Hypothetical Regulatory Case E (retail permits)","Trường hợp quy định giả định E (giấy phép bán lẻ)","假设监管案例E（零售开店审批）","가상 규제 사례 E(소매 출점 심사)","Caso regulatorio hipotético E (permisos minoristas)","Cas réglementaire hypothétique E (autorisations de vente)"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
+  ["架空IT企業F（エンジニア初任給）","Fictional IT Company F (starting salary)","Công ty CNTT giả định F (lương khởi điểm)","虚构IT企业F（工程师起薪）","가상 IT기업 F(엔지니어 초임)","Empresa informática ficticia F (salario inicial)","Entreprise informatique fictive F (salaire d’entrée)"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
+  ["架空物流施設G（倉庫空室率）","Fictional Logistics Facility G (warehouse vacancy)","Cơ sở logistics giả định G (kho trống)","虚构物流设施G（仓库空置率）","가상 물류시설 G(창고 공실률)","Instalación logística ficticia G (almacenes vacantes)","Installation logistique fictive G (entrepôts vacants)"],
   ["物流指標","Logistics Metric","Chỉ số logistics","物流指标","물류 지표","Indicador logístico","Indicateur logistique"],
-  ["港湾局データ・デベロッパー監査","Port authority data & developer audit","Dữ liệu cảng vụ & kiểm toán chủ đầu tư","港务局数据与开发商审计","항만청 데이터·개발사 감사","Datos de autoridad portuaria y auditoría del promotor","Données de l’autorité portuaire et audit du développeur"],
+  ["デモ用仮想データ（実際の照合なし）","Demo hypothetical data (not actually verified)","Dữ liệu giả định dùng cho demo (chưa xác minh thực tế)","演示用虚构数据（未经实际核实）","데모용 가상 데이터(실제 검증 없음)","Datos hipotéticos de demostración (sin verificación real)","Données fictives de démonstration (sans vérification réelle)"],
   ["カスタムレポート出力デモ","Custom Report Export Demo","Demo xuất báo cáo tùy chỉnh","自定义报告导出演示","맞춤 보고서 내보내기 데모","Demo de exportación de informes personalizados","Démo d’export de rapports personnalisés"],
   ["出力履歴:","Export history:","Lịch sử xuất:","导出历史：","출력 이력:","Historial de exportación:","Historique des exports :"],
   ["件","items","mục","条","건","elementos","éléments"],
