@@ -2191,10 +2191,10 @@ const step73Profiles = [
 const step73Labels = {
   ja: { progress: '完了', reports: '件表示中', verified: 'サンプル全6件中', history: '出力履歴:', generated: 'サンプル出力履歴を追加しました。実ファイルは生成されません。', download: 'PDF表示デモです。ファイルはダウンロードされません。', redownload: '履歴デモです。実ファイルはありません。' },
   en: { progress: 'complete', reports: 'items shown', verified: 'records', history: 'Export history:', generated: 'export history added. No file was generated.', download: 'PDF demo for', redownload: 'History demo for' },
-  vi: { progress: 'Hoàn tất', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'lịch sử xuất', download: 'Demo PDF cho', redownload: 'Demo lịch sử cho' },
+  vi: { progress: 'Đã hoàn thành', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'lịch sử xuất', download: 'Demo PDF cho', redownload: 'Demo lịch sử cho' },
   zh: { progress: '已完成', reports: '显示', verified: '条', history: '导出历史：', generated: '示例导出记录，未生成实际文件。', download: 'PDF演示，未下载实际文件。', redownload: '历史记录演示，不存在实际文件。' },
   ko: { progress: '완료', reports: '건 표시 중', verified: '전체', history: '출력 이력:', generated: '샘플 내보내기 기록이 추가되었습니다. 실제 파일은 생성되지 않습니다.', download: 'PDF 데모입니다. 실제 파일은 다운로드되지 않습니다.', redownload: '기록 데모입니다. 실제 파일은 없습니다.' },
-  es: { progress: 'completadas', reports: 'elementos mostrados', verified: 'Mostrando', history: 'Historial de exportación:', generated: 'registro de exportación', download: 'Demo PDF de', redownload: 'Historial de ejemplo de' },
+  es: { progress: 'completadas', reports: 'elementos mostrados', verified: 'Se muestran', history: 'Historial de exportación:', generated: 'registro de exportación', download: 'Demo PDF de', redownload: 'Historial de ejemplo de' },
   fr: { progress: 'terminées', reports: 'éléments affichés', verified: 'Affichage', history: 'Historique des exports :', generated: 'historique d’export', download: 'Démo PDF de', redownload: 'Historique de démonstration de' },
 };
 for (const profile of step73Profiles) {
