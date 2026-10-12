@@ -1067,8 +1067,8 @@ const dashboardQaProfiles = [
 const dashboardQaMenus = [
   { name: 'ダッシュボード', heading: 'ベトナム市場サマリー・ダッシュボード' },
   { name: '業界レポート', heading: 'ベトナム主要業界レポート・市場動向' },
-  { name: '調査テーマ', heading: '進行中の市場調査プロジェクト・プラン管理' },
-  { name: '照合データ', heading: '現地情報と照合した 財務・市場データライブラリ' },
+  { name: '調査テーマ', heading: '調査プロジェクトのサンプル進捗' },
+  { name: '照合データ', heading: '財務・市場データと現地照合の表示例' },
   { name: 'レポート出力', heading: 'カスタムレポート生成・エクスポート' },
   { name: '設定', heading: 'アカウント・システム設定' },
 ];
@@ -2189,7 +2189,7 @@ const step73Profiles = [
   { name: 'mobile-390', width: 390, height: 844, isMobile: true },
 ];
 const step73Labels = {
-  ja: { progress: '完了', reports: '件表示中', verified: '全データ382件中', history: '出力履歴:', generated: 'サンプル出力履歴を追加しました。実ファイルは生成されません。', download: 'PDF表示デモです。ファイルはダウンロードされません。', redownload: '履歴デモです。実ファイルはありません。' },
+  ja: { progress: '完了', reports: '件表示中', verified: 'サンプル全6件中', history: '出力履歴:', generated: 'サンプル出力履歴を追加しました。実ファイルは生成されません。', download: 'PDF表示デモです。ファイルはダウンロードされません。', redownload: '履歴デモです。実ファイルはありません。' },
   en: { progress: 'complete', reports: 'items shown', verified: 'records', history: 'Export history:', generated: 'export history added. No file was generated.', download: 'PDF demo for', redownload: 'History demo for' },
   vi: { progress: 'Hoàn tất', reports: 'Đang hiển thị', verified: 'Hiển thị', history: 'Lịch sử xuất:', generated: 'lịch sử xuất', download: 'Demo PDF cho', redownload: 'Demo lịch sử cho' },
   zh: { progress: '已完成', reports: '显示', verified: '条', history: '导出历史：', generated: '示例导出记录，未生成实际文件。', download: 'PDF演示，未下载实际文件。', redownload: '历史记录演示，不存在实际文件。' },
@@ -2256,10 +2256,10 @@ for (const profile of step73Profiles) {
       await industrySearch.fill('');
 
       await activate('照合データ');
-      result.observations.verifiedBefore = (await content.innerText()).match(/全データ382件中 \d+件を表示/)?.[0] || '';
+      result.observations.verifiedBefore = (await content.innerText()).match(/サンプル全6件中\d+件を表示/)?.[0] || '';
       await content.locator('input[placeholder="企業名・指標名・情報ソースで検索..."]').fill('___step73_unmatched___');
-      result.observations.verifiedAfter = (await content.innerText()).match(/全データ382件中 \d+件を表示/)?.[0] || '';
-      result.checks.verifiedChanged = result.observations.verifiedBefore === '全データ382件中 6件を表示' && result.observations.verifiedAfter === '全データ382件中 0件を表示';
+      result.observations.verifiedAfter = (await content.innerText()).match(/サンプル全6件中\d+件を表示/)?.[0] || '';
+      result.checks.verifiedChanged = result.observations.verifiedBefore === 'サンプル全6件中6件を表示' && result.observations.verifiedAfter === 'サンプル全6件中0件を表示';
 
       await activate('レポート出力');
       result.observations.historyBefore = (await content.innerText()).match(/出力履歴: \d+件/)?.[0] || '';
@@ -2305,7 +2305,7 @@ for (const profile of step73Profiles) {
       await activate(labels[language][2]);
       await content.locator('input[type="text"]').first().fill('___step73_unmatched___');
       const vtext = await getTranslated();
-      result.checks.verifiedTranslated = vtext.includes(expected.verified) && vtext.includes('382') && vtext.includes('0');
+      result.checks.verifiedTranslated = vtext.includes(expected.verified) && vtext.includes('6') && vtext.includes('0') && !vtext.includes('382');
       result.checks.noHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
       result.checks.noPageErrors = result.pageErrors.length === 0;
       await page.screenshot({ path: path.join(outputDir, 'step7-3-' + key + '-dynamic.png'), fullPage: true, animations: 'disabled' });
