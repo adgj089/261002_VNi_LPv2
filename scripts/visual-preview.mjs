@@ -1315,7 +1315,7 @@ for (const profile of dashboardDetailProfiles) {
       const language = content.locator('select');
       await language.selectOption('en');
       checks.languageState = await language.inputValue() === 'en';
-      await content.getByRole('button', { name: '設定を保存' }).click();
+      await content.getByRole('button', { name: 'デモ設定を確認' }).click();
       checks.saveToast = await page.locator('.toast').isVisible();
       checks.copyButtonExists = await content.getByRole('button', { name: 'キーをコピー' }).count() > 0;
       checks.regenerateExists = await content.getByRole('button', { name: '再生成' }).count() > 0;
