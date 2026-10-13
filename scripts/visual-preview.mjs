@@ -1317,8 +1317,8 @@ for (const profile of dashboardDetailProfiles) {
       checks.languageState = await language.inputValue() === 'en';
       await content.getByRole('button', { name: 'デモ設定を確認' }).click();
       checks.saveToast = await page.locator('.toast').isVisible();
-      checks.copyButtonExists = await content.getByRole('button', { name: 'キーをコピー' }).count() > 0;
-      checks.regenerateExists = await content.getByRole('button', { name: '再生成' }).count() > 0;
+      checks.copyButtonExists = await content.getByRole('button', { name: 'コピー（デモ）' }).count() > 0;
+      checks.regenerateExists = await content.getByRole('button', { name: '再生成（デモ）' }).count() > 0;
       result.nonFileDemoActions.push('Settings save persistence and API key regeneration: NOT TESTED');
     });
     result.status = Object.keys(result.groups).length === 5 &&
@@ -2574,6 +2574,66 @@ await fs.writeFile(path.join(outputDir, 'issue05-1024-diagnostics.json'), JSON.s
     await detailContext.close();
   }
 }
+
+// A2: independent API demo no-side-effect checks; existing 57 checks remain unchanged.
+const apiDemoProfiles = [
+  { name: 'desktop', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile-390', width: 390, height: 844 },
+  { name: 'mobile-320', width: 320, height: 844 },
+];
+const apiDemoResults = {};
+for (const profile of apiDemoProfiles) {
+  const result = { viewport: profile.width, status: 'NOT TESTED', checks: {}, errors: [] };
+  const context = await browser.newContext({
+    viewport: { width: profile.width, height: profile.height },
+    screen: { width: profile.width, height: profile.height },
+    deviceScaleFactor: 1, locale: 'ja-JP',
+    isMobile: profile.width < 768, hasTouch: profile.width < 768,
+  });
+  await context.addInitScript(() => {
+    window.__apiDemoWriteCalls = 0;
+    const stub = { writeText: async () => { window.__apiDemoWriteCalls++; } };
+    try { Object.defineProperty(navigator, 'clipboard', { configurable: true, get: () => stub }); }
+    catch (_) { /* The source-level absence of writeText is separately checked. */ }
+  });
+  const page = await context.newPage();
+  page.on('pageerror', err => result.errors.push(err.message));
+  try {
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
+    const mockup = page.locator('.mockup-window').first();
+    await mockup.waitFor({ state: 'visible', timeout: 15000 });
+    const menu = mockup.locator(profile.width < 640 ? '.mobile-menu-scroll' : '.mockup-sidebar');
+    const settings = menu.locator(profile.width < 640 ? 'button' : 'div.cursor-pointer').filter({ hasText: '設定' }).first();
+    await settings.scrollIntoViewIfNeeded();
+    await settings.click({ timeout: 12000 });
+    const content = mockup.locator('.mockup-main .tab-content-anim');
+    const copy = content.getByRole('button', { name: 'コピー（デモ）', exact: true });
+    const regenerate = content.getByRole('button', { name: '再生成（デモ）', exact: true });
+    result.checks.buttonsPresent = await copy.isVisible() && await regenerate.isVisible();
+    const key = content.locator('span.font-mono').first();
+    const before = await key.count() ? await key.textContent() : await content.textContent();
+    await copy.click();
+    const notice = 'この機能はデモ用です。APIキーの発行・コピー・再生成は行われません。';
+    result.checks.copyNotice = await page.locator('.toast').filter({ hasText: notice }).isVisible();
+    result.checks.noWriteAfterCopy = await page.evaluate(() => window.__apiDemoWriteCalls === 0);
+    await regenerate.click();
+    result.checks.regenerateNotice = await page.locator('.toast').filter({ hasText: notice }).isVisible();
+    result.checks.noWriteAfterRegenerate = await page.evaluate(() => window.__apiDemoWriteCalls === 0);
+    const after = await key.count() ? await key.textContent() : await content.textContent();
+    result.checks.keyUnchanged = before === after;
+    result.status = Object.values(result.checks).every(Boolean) && !result.errors.length ? 'PASS' : 'FAIL';
+  } catch (error) {
+    result.errors.push(String(error));
+    result.status = 'FAIL';
+  } finally {
+    apiDemoResults[profile.name] = result;
+    await context.close();
+  }
+}
+summary.apiDemoQa = apiDemoResults;
+await fs.writeFile(path.join(outputDir, 'api-demo-diagnostics.json'), JSON.stringify(apiDemoResults, null, 2));
 
 await browser.close();
 
