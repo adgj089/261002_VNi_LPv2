@@ -495,15 +495,8 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     }, 600);
   };
 
-  const copyApiKey = async () => {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
-      await navigator.clipboard.writeText('vn_ai_live_8f9a2e34d7c01b590e8a763f1c47b');
-      j('APIキーをクリップボードにコピーしました');
-    } catch (error) {
-      j('コピーできませんでした。ブラウザの権限をご確認ください。');
-    }
-  };
+  const apiDemoNotice = () => j('この機能はデモ用です。APIキーの発行・コピー・再生成は行われません。');
+  const copyApiKey = () => apiDemoNotice();
 
   // 1. Dashboard View
   const renderDashboard = () => s.jsxDEV("div", {
@@ -1755,13 +1748,13 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                     type: "button",
                     onClick: copyApiKey,
                     className: "flex-1 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[7.5px] font-bold transition-colors cursor-pointer",
-                    children: "キーをコピー"
+                    children: "コピー（デモ）"
                   }, void 0, !1),
                   s.jsxDEV("button", {
                     type: "button",
-                    onClick: () => j("デモ表示です。APIキーは再生成されません。"),
+                    onClick: apiDemoNotice,
                     className: "px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[7.5px] font-bold transition-colors cursor-pointer",
-                    children: "再生成"
+                    children: "再生成（デモ）"
                   }, void 0, !1)
                 ]
               }, void 0, !0)
@@ -4767,14 +4760,15 @@ const step6Rows = [
   ["投資法・環境基準改定時の重要アラート","Priority alerts for investment-law/environmental changes","Cảnh báo quan trọng khi luật đầu tư/môi trường thay đổi","投资法或环境标准修订的重要警报","투자법·환경 기준 개정 시 중요 알림","Alertas prioritarias por cambios legales o ambientales","Alertes prioritaires lors de changements juridiques ou environnementaux"],
   ["API連携キー管理","API Integration Key Management","Quản lý khóa tích hợp API","API集成密钥管理","API 연동 키 관리","Gestión de claves API","Gestion des clés API"],
   ["APIキーはデモ用の固定文字列です。実際の認証キーの発行・再生成は行いません。","This API key is a fixed demo string. No real authentication key is issued or regenerated.","Khóa API này là chuỗi cố định dùng cho bản demo. Không phát hành hoặc tạo lại khóa xác thực thật.","此API密钥是演示用固定字符串，不会签发或重新生成真实的认证密钥。","이 API 키는 데모용 고정 문자열입니다. 실제 인증 키는 발급되거나 재생성되지 않습니다.","Esta clave API es una cadena fija de demostración. No se emiten ni regeneran claves de autenticación reales.","Cette clé API est une chaîne fixe de démonstration. Aucune véritable clé d’authentification n’est émise ni régénérée."],
-  ["キーをコピー","Copy Key","Sao chép khóa","复制密钥","키 복사","Copiar clave","Copier la clé"],
-  ["再生成","Regenerate","Tạo lại","重新生成","재생성","Regenerar","Régénérer"],
+  ["コピー（デモ）","Copy (demo)","Sao chép (demo)","复制（演示）","복사(데모)","Copiar (demo)","Copier (démo)"],
+  ["再生成（デモ）","Regenerate (demo)","Tạo lại (demo)","重新生成（演示）","재생성(데모)","Regenerar (demo)","Régénérer (démo)"],
   ["表示言語設定 (Language)","Display Language","Ngôn ngữ hiển thị","显示语言","표시 언어","Idioma de visualización","Langue d’affichage"],
   ["デモ設定を確認","Review demo settings","Xem lại cài đặt demo","查看演示设置","데모 설정 확인","Revisar ajustes de demostración","Vérifier les paramètres de démonstration"],
   ["サンプルレポートのリクエストを受け付けました","Sample report request received","Đã nhận yêu cầu báo cáo mẫu","已收到样本报告请求","샘플 보고서 요청을 접수했습니다","Solicitud de informe de muestra recibida","Demande de rapport d’exemple reçue"],
   ["APIキーをクリップボードにコピーしました","API key copied to clipboard","Đã sao chép khóa API","API密钥已复制到剪贴板","API 키를 클립보드에 복사했습니다","Clave API copiada","Clé API copiée"],
   ["コピーできませんでした。ブラウザの権限をご確認ください。","Could not copy. Check your browser permissions.","Không thể sao chép. Vui lòng kiểm tra quyền của trình duyệt.","复制失败，请检查浏览器权限。","복사하지 못했습니다. 브라우저 권한을 확인해 주세요.","No se pudo copiar. Comprueba los permisos del navegador.","Copie impossible. Vérifiez les autorisations du navigateur."],
   ["デモ表示です。APIキーは再生成されません。","Demo only. The API key is not regenerated.","Chỉ là bản demo. Khóa API không được tạo lại.","仅为演示，API密钥不会重新生成。","데모 표시입니다. API 키는 재생성되지 않습니다.","Solo demostración. La clave API no se regenera.","Démonstration uniquement. La clé API n’est pas régénérée."],
+  ["この機能はデモ用です。APIキーの発行・コピー・再生成は行われません。","This is a demo feature. No API key is issued, copied, or regenerated.","Đây là tính năng demo. Khóa API không được phát hành, sao chép hoặc tạo lại.","此功能仅供演示，不会签发、复制或重新生成API密钥。","이 기능은 데모용입니다. API 키 발급, 복사, 재생성은 실행되지 않습니다.","Esta función es una demostración. No se emiten, copian ni regeneran claves API.","Cette fonctionnalité est une démonstration. Aucune clé API n’est émise, copiée ni régénérée."],
   ["設定変更の表示例です。この画面から設定は保存されません。","This is a settings demo. Settings are not saved from this screen.","Đây là bản demo cài đặt. Các thay đổi không được lưu từ màn hình này.","这是设置操作演示，此页面不会保存设置。","설정 변경 데모 화면입니다. 이 화면에서는 설정이 저장되지 않습니다.","Es una demostración de configuración. Los ajustes no se guardan desde esta pantalla.","Il s’agit d’une démonstration des paramètres. Les réglages ne sont pas enregistrés depuis cet écran."],
   ["調査を開始しました","Research started","Đã bắt đầu nghiên cứu","调研已开始","조사를 시작했습니다","Investigación iniciada","Recherche lancée"],
   ["出力デモを処理中...","Processing export demo...","Đang xử lý demo xuất...","正在处理导出演示...","내보내기 데모 처리 중...","Procesando demo de exportación...","Traitement de la démo d’export..."],
