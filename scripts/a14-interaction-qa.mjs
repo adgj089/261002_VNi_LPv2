@@ -26,6 +26,7 @@ const expected = {
     openModal: 'サンプルレポートを見る',
     modalPdf: 'PDF出力デモについて',
     closeModal: '閉じる',
+    historyViewToast: /^(?<name>.+?) の履歴デモです。実ファイルはありません。$/u,
     historyCounter: /出力履歴:\s*(\d+)件/u,
   },
   en: {
@@ -40,6 +41,7 @@ const expected = {
     openModal: 'View sample report',
     modalPdf: 'About PDF export demo',
     closeModal: 'Close',
+    historyViewToast: /^History demo for (?<name>.+?)\. No actual file exists\.$/u,
     historyCounter: /(?:Export history|History):\s*(\d+)/iu,
   },
 };
@@ -94,11 +96,16 @@ async function toastMatches(page, wanted) {
   await toast.filter({ hasText: wanted }).first().waitFor({ state: 'visible', timeout: 8000 });
   assertSame(await toast.first().textContent(), wanted, 'Toast');
 }
+function classifyError(error) {
+  if (error?.code === 'LOCATOR_UNCONFIRMED') return { status: 'NOT TESTED', category: 'TEST_SELECTOR' };
+  if (error?.code === 'ENVIRONMENT_ERROR' || /browser has been closed|target page, context or browser has been closed|net::ERR_|Navigation failed/i.test(String(error?.message || ''))) return { status: 'NOT TESTED', category: 'ENVIRONMENT' };
+  return { status: 'FAIL', category: 'APPLICATION_OR_ASSERTION' };
+}
 async function runCase(browser, profile, area) {
   const caseId = profile.id + '-' + area;
   const record = { caseId, commit, language: profile.lang, viewport: profile.width,
     area, status: 'NOT TESTED', steps: [], currentStep: null, reason: null,
-    errorCode: null, consoleErrors: [], downloads: [], screenshot: null };
+    errorCode: null, errorCategory: null, consoleErrors: [], downloads: [], screenshot: null };
   let context, page;
   const steps = async (name, callback) => {
     activeStep = name;
@@ -107,7 +114,7 @@ async function runCase(browser, profile, area) {
       await callback();
       record.steps.push({ name, status: 'PASS' });
     } catch (error) {
-      record.steps.push({ name, status: error?.code === 'LOCATOR_UNCONFIRMED' ? 'NOT TESTED' : 'FAIL',
+      record.steps.push({ name, status: classifyError(error).status, category: classifyError(error).category,
         reason: String(error?.message || error) });
       throw error;
     }
@@ -134,20 +141,30 @@ async function runCase(browser, profile, area) {
       });
       await steps('send-new-message-and-reply', async () => {
         const panel = page.locator('#vn-ai-chat-panel');
-        const before = await panel.getByText(e.chat, { exact: true }).count();
+        const users = panel.locator('.vn-ai-chat-message-user .vn-ai-chat-message-text');
+        const answers = panel.locator('.vn-ai-chat-message-assistant:not(.vn-ai-chat-typing) .vn-ai-chat-message-text');
+        const beforeUsers = await users.count();
+        const beforeAnswers = await answers.count();
         const question = 'What can this demonstration do?';
         await page.locator('#vn-ai-chat-input').fill(question);
         await page.locator('.vn-ai-chat-send').click({ timeout: 8000 });
-        await panel.getByText(question, { exact: true }).last().waitFor({ state: 'visible', timeout: 8000 });
-        await page.waitForFunction(({ answer, previous }) => {
-          const panel = document.querySelector('#vn-ai-chat-panel');
-          const matches = [...(panel?.querySelectorAll('*') || [])].filter(
-            (el) => el.textContent?.trim() === answer);
-          return matches.length > previous;
-        }, { answer: e.chat, previous: before }, { timeout: 8000 });
-        const answer = panel.getByText(e.chat, { exact: true }).last();
-        assertSame(await answer.textContent(), e.chat, 'new chat reply');
-        record.actualAnswer = await answer.textContent();
+        await page.waitForFunction(({ u, a }) => {
+          const root = document.querySelector('#vn-ai-chat-panel');
+          return root?.querySelectorAll('.vn-ai-chat-message-user .vn-ai-chat-message-text').length === u + 1 &&
+            root?.querySelectorAll('.vn-ai-chat-message-assistant:not(.vn-ai-chat-typing) .vn-ai-chat-message-text').length === a + 1;
+        }, { u: beforeUsers, a: beforeAnswers }, { timeout: 8000 });
+        assertSame(await users.last().textContent(), question, 'new question');
+        assertSame(await answers.last().textContent(), e.chat, 'new reply');
+        record.actualAnswer = await answers.last().textContent();
+      });
+      await steps('language-round-trip', async () => {
+        const alternate = profile.lang === 'ja' ? 'en' : 'ja';
+        await chooseLanguage(page, alternate);
+        await chooseLanguage(page, profile.lang);
+        assertSame(await page.locator('html').getAttribute('lang'), profile.lang, 'restored language');
+        const messages = page.locator('#vn-ai-chat-panel .vn-ai-chat-message-assistant:not(.vn-ai-chat-typing) .vn-ai-chat-message-text');
+        await messages.last().waitFor({ state: 'visible', timeout: 8000 });
+        assertSame(await messages.last().textContent(), e.chat, 'reply after round trip');
       });
       await steps('close-chat', () => page.locator('.vn-ai-chat-close').click({ timeout: 8000 }));
     } else if (area === 'T02') {
@@ -159,42 +176,48 @@ async function runCase(browser, profile, area) {
         await page.getByText(e.historyNote, { exact: true }).waitFor({ state: 'visible', timeout: 8000 });
       });
       await steps('history-plus-one-and-toast', async () => {
-        // Count only within the export-history heading's container, not the entire page.
-        const title = page.getByText(e.history, { exact: true });
-        const section = title.locator('xpath=..');
+        // Counter is in export header, separate from the history list card.
+        const counters = page.locator('span').filter({ hasText: e.historyCounter }).filter({ visible: true });
         const readCount = async () => {
-          const text = await section.innerText();
-          const match = text.match(e.historyCounter);
-          if (!match) { const error = new Error('history count not identified'); error.code = 'LOCATOR_UNCONFIRMED'; throw error; }
+          const element = await visibleUnique(counters, 'export history counter');
+          const match = (await element.innerText()).match(e.historyCounter);
+          if (!match) { const error = new Error('history counter not found'); error.code = 'LOCATOR_UNCONFIRMED'; throw error; }
           return Number(match[1]);
         };
+        const historyCard = page.getByText(e.history, { exact: true }).locator('xpath=..');
+        const rows = historyCard.locator('div.flex.items-center.justify-between.p-1\\.5');
         const previous = await readCount();
+        const rowCount = await rows.count();
         record.historyBefore = previous;
+        record.historyRowsBefore = rowCount;
+        if (rowCount !== previous) throw new Error('counter and rows differ before export');
         const action = await visibleUnique(page.getByRole('button', { name: e.exportAction, exact: true }).filter({ visible: true }), 'PDF export action');
         await action.click({ timeout: 8000 });
         await toastMatches(page, e.exportToast);
-        await page.waitForFunction(({ label, target, isEnglish }) => {
-          const title = [...document.querySelectorAll('*')].find((x) => x.textContent?.trim() === label);
-          const parentText = title?.parentElement?.innerText || '';
-          const match = parentText.match(isEnglish ? /(?:Export history|History):\s*(\d+)/i : /出力履歴:\s*(\d+)件/u);
-          return Boolean(match && Number(match[1]) === target);
-        }, { label: e.history, target: previous + 1, isEnglish: profile.lang === 'en' }, { timeout: 8000 });
+        await page.waitForFunction(({ target, english }) => {
+          const pattern = english ? /(?:Export history|History):\\s*(\\d+)/i : /出力履歴:\\s*(\\d+)件/u;
+          return [...document.querySelectorAll('span')].some(el => {
+            const m = el.textContent?.trim().match(pattern);
+            return m && Number(m[1]) === target;
+          });
+        }, { target: previous + 1, english: profile.lang === 'en' }, { timeout: 8000 });
         record.historyAfter = await readCount();
-        if (record.historyAfter !== previous + 1) throw new Error('history count did not increase by one');
+        record.historyRowsAfter = await rows.count();
+        if (record.historyAfter !== previous + 1 || record.historyRowsAfter !== rowCount + 1) throw new Error('history row/counter increment mismatch');
       });
       await steps('history-view-no-file', async () => {
-        // The view-button name is not yet verified across languages/DOM.
-        const view = page.getByRole('button', { name: /履歴デモを見る|View history demo/i }).filter({ visible: true });
-        const matches = await view.count();
-        if (matches < 1) { const error = new Error('history view locator not confirmed'); error.code = 'LOCATOR_UNCONFIRMED'; throw error; }
-        await view.first().click({ timeout: 8000 });
-        const toast = page.locator('.toast span');
+        const card = page.getByText(e.history, { exact: true }).locator('xpath=..');
+        const newest = card.locator('div.flex.items-center.justify-between.p-1\\.5').first();
+        const view = await visibleUnique(newest.getByRole('button'), 'new history row view button');
+        const name = normalize(await newest.locator('div.flex.flex-col.min-w-0 > span').first().textContent());
+        record.newestHistoryName = name;
+        await view.click({ timeout: 8000 });
+        const toast = page.locator('.toast span').first();
         await toast.waitFor({ state: 'visible', timeout: 8000 });
-        const message = await toast.first().textContent();
+        const message = normalize(await toast.textContent());
         record.historyViewToast = message;
-        if (!/(?:ファイル|file)/i.test(message || '') || !/(?:ありません|ない|no|not)/i.test(message || '')) {
-          throw new Error('history view Toast did not indicate absence of real file: ' + message);
-        }
+        const matched = message.match(e.historyViewToast);
+        if (!matched || normalize(matched.groups?.name) !== name) throw new Error('new history row Toast mismatch: ' + message);
       });
     } else if (area === 'T03') {
       await steps('open-modal', async () => {
@@ -216,13 +239,19 @@ async function runCase(browser, profile, area) {
           .getByRole('button', { name: e.modalPdf, exact: true }), 'modal PDF button');
         const before = record.downloads.length;
         // Observe the download channel before clicking and through the Toast display window.
-        const unexpectedDownload = page.waitForEvent('download', { timeout: 1500 }).then(
-          (d) => d.suggestedFilename(), () => null);
-        await pdf.click({ timeout: 8000 });
-        await toastMatches(page, e.pdfNote);
-        const observedDownload = await unexpectedDownload;
-        if (observedDownload || record.downloads.length > before) {
-          throw new Error('Unexpected PDF download: ' + (observedDownload || record.downloads.join(',')));
+        // Attach before click and keep listening until after Toast observation.
+        const detected = [];
+        const listener = (download) => detected.push(download.suggestedFilename());
+        page.on('download', listener);
+        try {
+          await pdf.click({ timeout: 8000 });
+          await toastMatches(page, e.pdfNote);
+          await page.waitForTimeout(1500);
+        } finally {
+          page.off('download', listener);
+        }
+        if (detected.length || record.downloads.length > before) {
+          throw new Error('Unexpected PDF download: ' + detected.concat(record.downloads.slice(before)).join(','));
         }
       });
       await steps('close-modal', async () => {
@@ -236,7 +265,9 @@ async function runCase(browser, profile, area) {
   } catch (error) {
     record.reason = String(error?.message || error);
     record.errorCode = error?.code || null;
-    record.status = error?.code === 'LOCATOR_UNCONFIRMED' || !page ? 'NOT TESTED' : 'FAIL';
+    const classification = !page ? { status: 'NOT TESTED', category: 'ENVIRONMENT' } : classifyError(error);
+    record.status = classification.status;
+    record.errorCategory = classification.category;
     record.screenshot = await screenshot(page, caseId);
   } finally {
     if (page && !record.screenshot) record.screenshot = await screenshot(page, caseId);
