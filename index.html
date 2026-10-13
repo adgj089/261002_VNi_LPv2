@@ -495,9 +495,14 @@ You might need to use a local HTTP server (instead of file://): https://react.de
     }, 600);
   };
 
-  const copyApiKey = () => {
-    navigator.clipboard?.writeText?.('vn_ai_live_8f9a2e34d7c01b590e8a763f1c47b');
-    j('APIキーをクリップボードにコピーしました');
+  const copyApiKey = async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText('vn_ai_live_8f9a2e34d7c01b590e8a763f1c47b');
+      j('APIキーをクリップボードにコピーしました');
+    } catch (error) {
+      j('コピーできませんでした。ブラウザの権限をご確認ください。');
+    }
   };
 
   // 1. Dashboard View
@@ -1597,6 +1602,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
         className: "bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs flex flex-col gap-2",
         children: [
           s.jsxDEV("span", { className: "text-[8.5px] font-bold text-slate-700", children: "通知・配信設定" }, void 0, !1),
+          s.jsxDEV("span", { className: "text-[7px] leading-snug text-slate-500 break-words", children: "通知設定は表示用デモです。メール・Slackの送信や配信登録は行いません。" }, void 0, !1),
           s.jsxDEV("div", {
             className: "flex flex-col gap-1.5 text-[8px]",
             children: [
@@ -1607,7 +1613,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                     className: "flex flex-col",
                     children: [
                       s.jsxDEV("span", { className: "font-bold text-slate-800", children: "週次ベトナム市場サマリー通知" }, void 0, !1),
-                      s.jsxDEV("span", { className: "text-[7px] text-slate-400", children: "毎週月曜日AM9:00に最新指標をメール配信" }, void 0, !1)
+                      s.jsxDEV("span", { className: "text-[7px] text-slate-400", children: "毎週月曜日AM9:00のメール配信を想定したデモ設定" }, void 0, !1)
                     ]
                   }, void 0, !0),
                   s.jsxDEV("button", {
@@ -1729,6 +1735,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
             className: "bg-white p-2.5 rounded-lg border border-slate-200/80 shadow-2xs flex flex-col justify-between gap-1.5",
             children: [
               s.jsxDEV("span", { className: "text-[8px] font-bold text-slate-700", children: "API連携キー管理" }, void 0, !1),
+              s.jsxDEV("span", { className: "text-[7px] leading-snug text-slate-500 break-words", children: "APIキーはデモ用の固定文字列です。実際の認証キーの発行・再生成は行いません。" }, void 0, !1),
               s.jsxDEV("div", {
                 className: "p-1.5 bg-slate-50 rounded border border-slate-200 font-mono text-[7.5px] text-slate-700 flex items-center justify-between",
                 children: [
@@ -1752,7 +1759,7 @@ You might need to use a local HTTP server (instead of file://): https://react.de
                   }, void 0, !1),
                   s.jsxDEV("button", {
                     type: "button",
-                    onClick: () => j("APIキーを再生成しました"),
+                    onClick: () => j("デモ表示です。APIキーは再生成されません。"),
                     className: "px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[7.5px] font-bold transition-colors cursor-pointer",
                     children: "再生成"
                   }, void 0, !1)
@@ -1776,9 +1783,9 @@ You might need to use a local HTTP server (instead of file://): https://react.de
               }, void 0, !0),
               s.jsxDEV("button", {
                 type: "button",
-                onClick: () => j("設定を保存しました"),
+                onClick: () => j("設定変更の表示例です。この画面から設定は保存されません。"),
                 className: "w-full py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[7.5px] font-bold transition-colors cursor-pointer",
-                children: "設定を保存"
+                children: "デモ設定を確認"
               }, void 0, !1)
             ]
           }, void 0, !0)
@@ -4751,21 +4758,24 @@ const step6Rows = [
   ["アカウント権限","Account Role","Quyền tài khoản","账户权限","계정 권한","Rol de cuenta","Rôle du compte"],
   ["最高管理者 (全機能解放)","Super Admin (all features)","Quản trị viên cao nhất (toàn bộ tính năng)","超级管理员（全部功能）","최고 관리자 (전체 기능)","Superadministrador (todas las funciones)","Super administrateur (toutes les fonctions)"],
   ["通知・配信設定","Notifications & Delivery","Thông báo & phân phối","通知与推送设置","알림·배포 설정","Notificaciones y distribución","Notifications et diffusion"],
+  ["通知設定は表示用デモです。メール・Slackの送信や配信登録は行いません。","Notification settings are for demonstration only. No email or Slack messages are sent, and no deliveries are registered.","Cài đặt thông báo chỉ dùng để minh họa. Không gửi email hay tin nhắn Slack và không đăng ký lịch gửi.","通知设置仅供演示，不会发送邮件或Slack消息，也不会登记发送计划。","알림 설정은 데모용입니다. 이메일이나 Slack 메시지를 보내거나 발송을 등록하지 않습니다.","Los ajustes de notificaciones son solo demostrativos. No se envían correos ni mensajes de Slack, ni se programan envíos.","Les paramètres de notification sont uniquement une démonstration. Aucun e-mail ou message Slack n’est envoyé, et aucun envoi n’est programmé."],
   ["週次ベトナム市場サマリー通知","Weekly Vietnam market summary","Tóm tắt thị trường Việt Nam hàng tuần","每周越南市场摘要","주간 베트남 시장 요약 알림","Resumen semanal del mercado de Vietnam","Résumé hebdomadaire du marché vietnamien"],
-  ["毎週月曜日AM9:00に最新指標をメール配信","Email latest indicators every Monday at 9:00 AM","Gửi email chỉ số mới nhất lúc 9:00 sáng thứ Hai","每周一上午9:00邮件发送最新指标","매주 월요일 오전 9시에 최신 지표 이메일 발송","Enviar los últimos indicadores cada lunes a las 9:00","Envoi des derniers indicateurs chaque lundi à 9 h"],
+  ["毎週月曜日AM9:00のメール配信を想定したデモ設定","Demo setting for a proposed Monday 9:00 AM email delivery","Cài đặt demo mô phỏng gửi email vào 9:00 sáng thứ Hai hằng tuần","每周一上午9点邮件发送的模拟设置","매주 월요일 오전 9시 이메일 발송을 가정한 데모 설정","Configuración de demostración para un envío de correo previsto los lunes a las 9:00","Paramètre de démonstration pour un envoi d’e-mail envisagé chaque lundi à 9 h"],
   ["調査タスク完了・レポート納品通知","Research task completion & report delivery","Hoàn thành nhiệm vụ nghiên cứu & bàn giao báo cáo","调研任务完成与报告交付","조사 작업 완료·보고서 납품 알림","Finalización de tareas y entrega de informes","Fin des tâches de recherche et livraison des rapports"],
   ["現地確認が完了した際のSlack・メール通知を想定したデモ機能","Demo feature illustrating proposed Slack and email alerts upon completion of local verification","Chức năng demo minh họa thông báo Slack và email dự kiến khi hoàn tất xác minh tại địa phương","演示功能：展示设想中的本地核验完成后Slack及邮件通知","현지 확인 완료 시 Slack 및 이메일 알림을 보내는 기능을 가정한 데모","Función de demostración de avisos previstos por Slack y correo tras una verificación local","Fonction de démonstration illustrant des notifications Slack et e-mail envisagées après vérification locale"],
   ["外資法規制・リスク急変アラート","Foreign investment regulation & risk alerts","Cảnh báo quy định đầu tư nước ngoài & rủi ro","外资法规与风险变动警报","외자 법규·리스크 급변 알림","Alertas de regulación extranjera y riesgo","Alertes réglementation des investissements étrangers et risques"],
   ["投資法・環境基準改定時の重要アラート","Priority alerts for investment-law/environmental changes","Cảnh báo quan trọng khi luật đầu tư/môi trường thay đổi","投资法或环境标准修订的重要警报","투자법·환경 기준 개정 시 중요 알림","Alertas prioritarias por cambios legales o ambientales","Alertes prioritaires lors de changements juridiques ou environnementaux"],
   ["API連携キー管理","API Integration Key Management","Quản lý khóa tích hợp API","API集成密钥管理","API 연동 키 관리","Gestión de claves API","Gestion des clés API"],
+  ["APIキーはデモ用の固定文字列です。実際の認証キーの発行・再生成は行いません。","This API key is a fixed demo string. No real authentication key is issued or regenerated.","Khóa API này là chuỗi cố định dùng cho bản demo. Không phát hành hoặc tạo lại khóa xác thực thật.","此API密钥是演示用固定字符串，不会签发或重新生成真实的认证密钥。","이 API 키는 데모용 고정 문자열입니다. 실제 인증 키는 발급되거나 재생성되지 않습니다.","Esta clave API es una cadena fija de demostración. No se emiten ni regeneran claves de autenticación reales.","Cette clé API est une chaîne fixe de démonstration. Aucune véritable clé d’authentification n’est émise ni régénérée."],
   ["キーをコピー","Copy Key","Sao chép khóa","复制密钥","키 복사","Copiar clave","Copier la clé"],
   ["再生成","Regenerate","Tạo lại","重新生成","재생성","Regenerar","Régénérer"],
   ["表示言語設定 (Language)","Display Language","Ngôn ngữ hiển thị","显示语言","표시 언어","Idioma de visualización","Langue d’affichage"],
-  ["設定を保存","Save Settings","Lưu cài đặt","保存设置","설정 저장","Guardar configuración","Enregistrer les paramètres"],
+  ["デモ設定を確認","Review demo settings","Xem lại cài đặt demo","查看演示设置","데모 설정 확인","Revisar ajustes de demostración","Vérifier les paramètres de démonstration"],
   ["サンプルレポートのリクエストを受け付けました","Sample report request received","Đã nhận yêu cầu báo cáo mẫu","已收到样本报告请求","샘플 보고서 요청을 접수했습니다","Solicitud de informe de muestra recibida","Demande de rapport d’exemple reçue"],
   ["APIキーをクリップボードにコピーしました","API key copied to clipboard","Đã sao chép khóa API","API密钥已复制到剪贴板","API 키를 클립보드에 복사했습니다","Clave API copiada","Clé API copiée"],
-  ["APIキーを再生成しました","API key regenerated","Đã tạo lại khóa API","API密钥已重新生成","API 키를 재생성했습니다","Clave API regenerada","Clé API régénérée"],
-  ["設定を保存しました","Settings saved","Đã lưu cài đặt","设置已保存","설정을 저장했습니다","Configuración guardada","Paramètres enregistrés"],
+  ["コピーできませんでした。ブラウザの権限をご確認ください。","Could not copy. Check your browser permissions.","Không thể sao chép. Vui lòng kiểm tra quyền của trình duyệt.","复制失败，请检查浏览器权限。","복사하지 못했습니다. 브라우저 권한을 확인해 주세요.","No se pudo copiar. Comprueba los permisos del navegador.","Copie impossible. Vérifiez les autorisations du navigateur."],
+  ["デモ表示です。APIキーは再生成されません。","Demo only. The API key is not regenerated.","Chỉ là bản demo. Khóa API không được tạo lại.","仅为演示，API密钥不会重新生成。","데모 표시입니다. API 키는 재생성되지 않습니다.","Solo demostración. La clave API no se regenera.","Démonstration uniquement. La clé API n’est pas régénérée."],
+  ["設定変更の表示例です。この画面から設定は保存されません。","This is a settings demo. Settings are not saved from this screen.","Đây là bản demo cài đặt. Các thay đổi không được lưu từ màn hình này.","这是设置操作演示，此页面不会保存设置。","설정 변경 데모 화면입니다. 이 화면에서는 설정이 저장되지 않습니다.","Es una demostración de configuración. Los ajustes no se guardan desde esta pantalla.","Il s’agit d’une démonstration des paramètres. Les réglages ne sont pas enregistrés depuis cet écran."],
   ["調査を開始しました","Research started","Đã bắt đầu nghiên cứu","调研已开始","조사를 시작했습니다","Investigación iniciada","Recherche lancée"],
   ["出力デモを処理中...","Processing export demo...","Đang xử lý demo xuất...","正在处理导出演示...","내보내기 데모 처리 중...","Procesando demo de exportación...","Traitement de la démo d’export..."],
   ["PDFを出力中...","Exporting PDF...","Đang xuất PDF...","正在导出PDF...","PDF 출력 중...","Exportando PDF...","Export du PDF..."],
