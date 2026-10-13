@@ -2635,6 +2635,47 @@ for (const profile of apiDemoProfiles) {
 summary.apiDemoQa = apiDemoResults;
 await fs.writeFile(path.join(outputDir, 'api-demo-diagnostics.json'), JSON.stringify(apiDemoResults, null, 2));
 
+
+ // A-14: independent demo-disclosure checks; no existing checks are changed.
+const a14Languages = ['ja', 'en', 'vi', 'zh', 'ko', 'es', 'fr'];
+const a14Widths = [1440, 768, 390, 320];
+const a14Results = {};
+for (const width of a14Widths) {
+  for (const language of a14Languages) {
+    const id = language + '-' + width;
+    const ctx = await browser.newContext({viewport:{width,height:900}});
+    const result = {language,width,status:'NOT TESTED',checks:{},errors:[]};
+    try {
+      await ctx.addInitScript(lang => localStorage.setItem('vnInsightLanguage',lang),language);
+      const page = await ctx.newPage();
+      const jsErrors = [];
+      page.on('pageerror',e => jsErrors.push(e.message));
+      await page.goto(baseUrl,{waitUntil:'domcontentloaded',timeout:60000});
+      await page.locator('body').waitFor({state:'visible',timeout:15000});
+      const data = await page.evaluate(() => {
+        const t = document.getElementById('vn-ai-chat-script')?.textContent || '';
+        const i = [...document.scripts].map(el => el.textContent || '').find(x=>x.includes('const a14Rows =')) || '';
+        return {
+          chatPolicy:t.includes('実際のAIによる市場調査・回答生成には対応していません'),
+          historyPolicy:i.includes('ファイル名・日時・容量・数値はサンプル'),
+          modalPolicy:i.includes('実際のレポート生成、データ取得、会員登録には対応していません'),
+          pdfPolicy:i.includes('PDFファイルの生成・ダウンロードは行われません'),
+          dictionary:i.includes('...a14Rows'),
+          overflow:document.documentElement.scrollWidth > innerWidth + 2
+        };
+      });
+      result.checks = {...data, noPageErrors:jsErrors.length===0};
+      result.errors.push(...jsErrors);
+      const necessary = ['chatPolicy','historyPolicy','modalPolicy','pdfPolicy','dictionary','noPageErrors'];
+      result.status = necessary.every(k=>result.checks[k]) && !result.checks.overflow ? 'PASS':'FAIL';
+      result.scope = 'Static DOM/script presence and page render only; feature interactions NOT TESTED';
+    } catch(e) {result.status='FAIL';result.errors.push(String(e));}
+    finally {a14Results[id]=result;await ctx.close();}
+  }
+}
+summary.a14DisclosureQa = a14Results;
+await fs.writeFile(path.join(outputDir,'a14-disclosure-diagnostics.json'),JSON.stringify(a14Results,null,2));
+
 await browser.close();
 
 await fs.writeFile(
